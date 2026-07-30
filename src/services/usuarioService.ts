@@ -8,9 +8,9 @@ export const usuarioService =
         const response = await api.get('/apis/usuario');
         return response.data;
     },
-    getMonitoresByResponsavel: async (idResponsavel: number): Promise<Usuario[]> =>
+    getMonitoresByResponsavel: async (usuario: Usuario): Promise<Usuario[]> =>
     {
-        const response = await api.get(`/apis/usuario/getMonitoresByResponsavel/${idResponsavel}`);
+        const response = await api.get(`/apis/usuario/getMonitoresByResponsavel/${usuario.id}`);
         return response.data;
     },
     getAllFisioterapeutas: async (): Promise<Usuario[]> =>

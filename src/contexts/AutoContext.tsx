@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { api } from '../services/api';
 
 interface AuthContextData {
-  usuario: Usuario | null;
+  usuarioLogado: Usuario | null;
   login: (email: string, senha: string) => Promise<void>;
   logout: () => void;
 }
@@ -14,7 +14,7 @@ export const AuthContext = createContext<AuthContextData>({} as AuthContextData)
 export function AuthProvider({ children }: { children: ReactNode })
 {
     
-  const [usuario, setUsuario] = useState<Usuario | null>(() => {
+  const [usuarioLogado, setUsuarioLogado] = useState<Usuario | null>(() => {
     const userStorage = localStorage.getItem('@ClinicaVR:usuario');
     if (userStorage) return JSON.parse(userStorage);
     return null;
@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode })
    try {
         const response = await api.post('/apis/usuario/logar', null, { params: { email, senha } });
         const usuarioLogado: Usuario = response.data;
-        setUsuario(usuarioLogado);
+        setUsuarioLogado(usuarioLogado);
         localStorage.setItem('@ClinicaVR:usuario', JSON.stringify(usuarioLogado));
     }
     catch(error)
@@ -36,12 +36,12 @@ export function AuthProvider({ children }: { children: ReactNode })
   }
 
   function logout() {
-    setUsuario(null);
+    setUsuarioLogado(null);
     localStorage.removeItem('@ClinicaVR:usuario');
   }
 
   return (
-    <AuthContext.Provider value={{ usuario, login, logout }}>
+    <AuthContext.Provider value={{ usuarioLogado, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

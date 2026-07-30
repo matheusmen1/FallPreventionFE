@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Usuario } from '../types/usuario';
 import { usuarioService } from '../../../services/usuarioService';
 import { FormUsuario } from '../components/FormUsuario'; 
-
+import { useAuth } from '../../../contexts/AutoContext';
 export function GerenciarUsuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [fisioterapeutas, setFisioterapeutas] = useState<Usuario[]>([]);
@@ -11,6 +11,9 @@ export function GerenciarUsuarios() {
   const [exibirFormulario, setExibirFormulario] = useState(false);
   const [usuarioEmEdicao, setUsuarioEmEdicao] = useState<Usuario | null>(null);
 
+  const { usuarioLogado } = useAuth();
+
+  const [btSelecionado, setBtSelecionado] = useState(false);
   useEffect(() => {
     carregandoUsuarios();
     carregarFisioterapeutas();
@@ -55,6 +58,22 @@ export function GerenciarUsuarios() {
     setExibirFormulario(false); 
   }
 
+  async function buscarMonitoresById()
+  {
+    try{
+      if (usuarioLogado)
+      {
+        const dados = await usuarioService.getMonitoresByResponsavel(usuarioLogado)
+        setUsuarios(dados)
+      }
+      
+    }catch(error){
+      console.log("Erro ao buscar: ", error)
+    }
+    finally{
+      setCarregando(false);
+    }
+  }
   async function salvar(usuarioForm: Usuario) {
     try {
       if (usuarioForm.id) {
@@ -110,8 +129,21 @@ export function GerenciarUsuarios() {
         <button onClick={onNovoUsuario} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow transition-colors font-medium">
           + Novo Usuário
         </button>
+        
       </div>
-
+      <div className="mb-4">
+      
+        <button
+        onClick={() => {setBtSelecionado(!btSelecionado); if(!btSelecionado) buscarMonitoresById(); else carregandoUsuarios();}}
+        className={`px-4 py-2 rounded-md transition-all ${
+          btSelecionado
+            ? "bg-blue-800 text-white shadow-inner scale-95"
+            : "bg-blue-600 text-white shadow hover:bg-blue-700"
+        }`}
+      >
+        Meus Monitores
+      </button>
+      </div>
       <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -121,7 +153,7 @@ export function GerenciarUsuarios() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RA</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nível</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cargo</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsável</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -136,18 +168,21 @@ export function GerenciarUsuarios() {
                 <tr key={usuario.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{usuario.nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.cpf}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.telefone}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.ra}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${usuario.nivel === 1 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
                       {usuario.nivel === 1 ? 'Fisioterapeuta' : 'Monitor'}
                     </span>
                   </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.telefone}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.ra}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.responsavel ? usuario.responsavel.nome : '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => onAlterar(usuario)} className="text-blue-600 hover:text-blue-900 mr-4">Alterar</button>
-                    <button onClick={() => excluir(usuario)} className="text-red-600 hover:text-red-900">Excluir</button>
+                    <div className="flex gap-2 justify-end">
+                    <button onClick={() => onAlterar(usuario)}  className="px-3 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all duration-100">Alterar</button>
+                    <button onClick={() => excluir(usuario)} className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 active:scale-95 transition-all duration-100">Excluir</button>
+                    </div>
                   </td>
                 </tr>
               ))

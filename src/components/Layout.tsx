@@ -3,9 +3,9 @@ import { useAuth } from '../contexts/AutoContext';
 
 export function Layout() 
 {
-  const { usuario, logout } = useAuth();
+  const { usuarioLogado, logout } = useAuth();
 
-  const cargoTexto = usuario?.nivel === 1 ? 'Fisioterapeuta' : 'Monitor';
+  const cargoTexto = usuarioLogado?.nivel === 1 ? 'Fisioterapeuta' : 'Monitor';
 
   return (
     <div className="flex h-screen bg-gray-100 font-sans">
@@ -14,11 +14,11 @@ export function Layout()
       <aside className="w-64 bg-slate-900 text-white flex flex-col z-10 shadow-lg">
 
         <div className="h-16 flex items-center px-6 text-xl font-bold border-b border-slate-800">
-          🥽 Clinica VR
+          🥽 Fall Prevention VR
         </div>
         <nav className="flex-1 p-4 flex flex-col gap-2">
           {
-            usuario?.nivel === 1 && (
+            usuarioLogado?.nivel === 1 && (
               <Link to="/usuarios" className="px-4 py-2 rounded hover:bg-slate-800 transition-colors">
                 👥 Usuários
               </Link>
@@ -44,7 +44,7 @@ export function Layout()
             
             <div className="flex flex-col text-right">
               <span className="text-sm font-bold text-gray-800 leading-none mb-1">
-                {usuario?.nome}
+                {usuarioLogado?.nome}
               </span>
               <span className="text-xs text-gray-500 font-medium">
                 {cargoTexto}
@@ -53,7 +53,7 @@ export function Layout()
 
       
             <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-blue-500 flex items-center justify-center text-blue-700 font-bold">
-              {usuario?.nome?.charAt(0).toUpperCase()}
+              {usuarioLogado?.nome?.charAt(0).toUpperCase()}
             </div>
 
             <div className="h-6 w-px bg-gray-300 mx-1"></div>

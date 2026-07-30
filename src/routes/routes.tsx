@@ -4,12 +4,12 @@ import { Login } from '../features/auth/pages/Login';
 import { useAuth } from '../contexts/AutoContext';
 
 import { GerenciarUsuarios } from '../features/usuario/pages/GerenciarUsuarios';
-const TelaPacientes = () => <h1 className="text-2xl font-bold">Módulo de Pacientes</h1>;
+import { GerenciarPaciente } from '../features/paciente/pages/GerenciarPaciente';
 
 export function AppRoutes()
 {
-  const { usuario } = useAuth();
-  if (!usuario) 
+  const { usuarioLogado } = useAuth();
+  if (!usuarioLogado) 
   {
     return (
       <Routes>
@@ -22,9 +22,11 @@ export function AppRoutes()
   return (
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/usuarios" replace />} />        
-          <Route path="usuarios" element={<GerenciarUsuarios />} />
-          <Route path="pacientes" element={<TelaPacientes />} />
+          <Route index element={<Navigate to="/pacientes" replace />} />
+          {usuarioLogado.nivel === 1 &&
+            <Route path="usuarios" element={<GerenciarUsuarios />} />
+          }
+          <Route path="pacientes" element={<GerenciarPaciente />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
