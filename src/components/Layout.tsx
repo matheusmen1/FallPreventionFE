@@ -14,20 +14,18 @@ export function Layout()
       <aside className="w-64 bg-slate-900 text-white flex flex-col z-10 shadow-lg">
 
         <div className="h-16 flex items-center px-6 text-xl font-bold border-b border-slate-800">
-          🥽 Fall Prevention VR
+           Fall Prevention VR
         </div>
         <nav className="flex-1 p-4 flex flex-col gap-2">
           {
             usuarioLogado?.nivel === 1 && (
               <Link to="/usuarios" className="px-4 py-2 rounded hover:bg-slate-800 transition-colors">
-                👥 Usuários
+                 Usuários
               </Link>
             )
           }
-        
-          <Link to="/pacientes" className="px-4 py-2 rounded hover:bg-slate-800 transition-colors">
-            🧓 Pacientes
-          </Link>
+          <Link to="/pacientes" className="px-4 py-2 rounded hover:bg-slate-800 transition-colors"> Pacientes</Link>
+          <Link to= "/tipoExercicio" className="px-4 py-2 rounded hover:bg-slate-800 transition-colors" > Tipo de Exercício</Link>
         </nav>
       </aside>
 

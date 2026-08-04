@@ -4,7 +4,7 @@ import type { Paciente } from '../types/paciente';
 interface FormProps 
 {
   onCancelar: () => void;
-  onSalvar: (usuario: Paciente) => void;
+  onSalvar: (paciente: Paciente) => void;
   pacienteParaAlterar?: Paciente | null;
 }
 
