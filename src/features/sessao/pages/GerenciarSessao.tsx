@@ -9,7 +9,7 @@ import { exercicioService } from '../../../services/exercicioService';
 
 import { FormSessao } from '../components/FormSessao'; 
 import { useAuth } from '../../../contexts/AutoContext';
-
+import { useSessao } from '../../../contexts/SessaoContext';
 export function GerenciarSessao() 
 {
   const [sessoes, setSessoes] = useState<Sessao[]>([]);
@@ -22,6 +22,7 @@ export function GerenciarSessao()
   const [sessaoEmEdicao, setSessaoEmEdicao] = useState<Sessao | null>(null);
 
   const { usuarioLogado } = useAuth();
+  const { atualizarSessoes } = useSessao();
   const [btSelecionado, setBtSelecionado] = useState(false);
 
   useEffect(() => {
@@ -31,14 +32,28 @@ export function GerenciarSessao()
   async function carregarDadosIniciais() {
     try {
       setCarregando(true);
+
+      if (usuarioLogado && usuarioLogado.id != null)
+      {
+        if (usuarioLogado.nivel > 0)
+        {
+          const dados = await sessaoService.getAll();
+          setSessoes(dados);
+        }
+        else
+        {
+          const dados = await sessaoService.getAllByResponsavelId(usuarioLogado.id);
+          setSessoes(dados);   
+        }
+       
+      }
       
-      const [dadosSessoes, dadosPacientes, dadosExercicios] = await Promise.all([
-        sessaoService.getAll(),
+
+      const [dadosPacientes, dadosExercicios] = await Promise.all([
         pacienteService.getAll(),
         exercicioService.getAll()
       ]);
 
-      setSessoes(dadosSessoes);
       setPacientes(dadosPacientes);
       setExercicios(dadosExercicios);
 
@@ -95,6 +110,7 @@ export function GerenciarSessao()
       }
       setExibirFormulario(false); 
       carregarSessoes(); 
+      atualizarSessoes();
     } catch (error) {
       console.error("Erro ao salvar:", error);
       alert("Erro ao salvar a sessão.");
@@ -120,7 +136,6 @@ export function GerenciarSessao()
     }
   }
 
-  // Helpers Visuais
   function formatarData(data: string | Date | undefined) {
     if (!data) return '-';
     return new Date(data).toLocaleDateString('pt-BR', {
@@ -168,7 +183,7 @@ export function GerenciarSessao()
         </button>
       </div>
       
-      <div className="mb-4">
+      {usuarioLogado != null && usuarioLogado.nivel > 0 && ( <div className="mb-4">
         <button
           onClick={() => {
             setBtSelecionado(!btSelecionado); 
@@ -183,7 +198,7 @@ export function GerenciarSessao()
         >
           Minhas Sessões
         </button>
-      </div>
+      </div>)}
 
       <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
@@ -209,10 +224,10 @@ export function GerenciarSessao()
                     {formatarData(sessao.data_hora)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {sessao.paciente ? sessao.paciente.nome : 'Não vinculado'}
+                    {sessao.paciente ? sessao.paciente.nome : 'Não Vinculado'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {sessao.responsavel ? sessao.responsavel.nome : 'Não atribuído'}
+                    {sessao.responsavel ? sessao.responsavel.nome : 'Não Atribuído'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {sessao.sessaoFases ? `${sessao.sessaoFases.length} cenário(s)` : '-'}

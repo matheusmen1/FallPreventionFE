@@ -8,6 +8,8 @@ import { GerenciarPaciente } from '../features/paciente/pages/GerenciarPaciente'
 import { GerenciarTipoExercicio } from '../features/tipoExercicio/pages/GerenciarTipoExercicio';
 import { GerenciarExercicio } from '../features/exercicio/pages/GerenciarExercicio';
 import { GerenciarSessao } from '../features/sessao/pages/GerenciarSessao';
+import { AprovacaoSessao } from '../features/sessao/pages/AprovacaoSessao';
+import { Atendimento } from '../features/sessao/pages/Atendimento';
 export function AppRoutes()
 {
   const { usuarioLogado } = useAuth();
@@ -24,14 +26,18 @@ export function AppRoutes()
   return (
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/pacientes" replace />} />
-          {usuarioLogado.nivel === 1 &&
-            <Route path="usuarios" element={<GerenciarUsuarios />} />
-          }
+          <Route index element={<Navigate to="/sessoes" replace />} />
+          {usuarioLogado.nivel === 1 && (
+            <>
+              <Route path="usuarios" element={<GerenciarUsuarios />} />
+              <Route path="aprovacao-sessoes" element={<AprovacaoSessao/>}></Route>
+            </>
+          )}
           <Route path="pacientes" element={<GerenciarPaciente />} />
           <Route path="exercicios" element={<GerenciarExercicio />} />
           <Route path="tipo-exercicio" element={<GerenciarTipoExercicio/>}></Route>
           <Route path="sessoes" element={<GerenciarSessao/>}></Route>
+          <Route path="atendimento" element={<Atendimento/>}></Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

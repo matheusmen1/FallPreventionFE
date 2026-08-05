@@ -4,7 +4,6 @@ import type { Paciente } from '../../paciente/types/paciente';
 import type { Exercicio } from '../../exercicio/types/exercicio'; 
 import type { SessaoFase } from '../types/sessaoFase'; 
 import { useAuth } from '../../../contexts/AutoContext'; 
-
 interface FormProps {
   onCancelar: () => void;
   onSalvar: (sessao: Sessao) => void;
@@ -22,7 +21,6 @@ export function FormSessao({
 }: FormProps) {
   
   const { usuarioLogado } = useAuth(); 
-
   const [formData, setFormData] = useState<Partial<Sessao>>({
     data_hora: '',
     status: 'Pendente',
@@ -85,6 +83,20 @@ export function FormSessao({
       <h2 className="text-xl font-bold mb-6 text-gray-800">
         {sessaoParaAlterar ? 'Alterar Sessão' : 'Nova Sessão'}
       </h2>
+      
+      {sessaoParaAlterar?.status.toUpperCase() === 'RECUSADA' && (
+        <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-md shadow-sm">
+          <h3 className="text-red-800 font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
+            Alterações Solicitadas pelo Fisioterapeuta
+          </h3>
+          <p className="text-red-700 mt-2 text-sm">
+            <strong>Motivo do Recusamento:</strong> {sessaoParaAlterar.aprovacaoSessao.motivo }
+          </p>
+          <p className="text-red-600 text-xs mt-2 italic">
+            Faça as Alterações Necessárias Abaixo e Clique em Confirmar. A sessão será Enviada Novamente para Aprovação.
+          </p>
+        </div>
+      )}
 
       <form onSubmit={(e) => { e.preventDefault(); onSalvar(formData as Sessao); }} className="space-y-6">
         
@@ -119,7 +131,7 @@ export function FormSessao({
         <hr className="border-gray-200" />
 
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Roteiro da Sessão (Fases)</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Fases da Sessão</h3>
           
           <div className="flex gap-2 mb-4 items-end">
             <div className="flex-1">
