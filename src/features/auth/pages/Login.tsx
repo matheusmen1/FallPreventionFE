@@ -21,7 +21,7 @@ export function Login() {
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl mb-2">🥽</h1>
+          <h1 className="text-4xl mb-2"></h1>
           <h2 className="text-2xl font-bold text-gray-800">Fall Prevention VR</h2>
           <p className="text-gray-500 text-sm">Faça login para acessar o painel</p>
         </div>
