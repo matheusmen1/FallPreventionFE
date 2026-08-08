@@ -8,7 +8,11 @@ export const sessaoService = {
         const response = await api.get('/apis/sessao');
         return response.data;
     },
-    getAllByStatus: async (status: string, id: number): Promise<Sessao[]> => {
+    getAllByStatus: async (status: string): Promise<Sessao[]> =>{
+        const response = await api.get(`/apis/sessao/status/${status}`)
+        return response.data;
+    },
+    getAllByStatusId: async (status: string, id: number): Promise<Sessao[]> => {
         const response = await api.get(`/apis/sessao/status/${status}/${id}`);
         return response.data;
     },
@@ -22,6 +26,10 @@ export const sessaoService = {
     },
     getAllByPacienteId: async (pacienteId: number): Promise<Sessao[]> => {
         const response = await api.get(`/apis/sessao/getAllByPacienteId/${pacienteId}`);
+        return response.data;
+    },
+    getById: async (id: number): Promise<Sessao> => {
+        const response = await api.get(`/apis/sessao/${id}`);
         return response.data;
     },
     add: async (sessao: Sessao): Promise<Sessao> => {
@@ -38,5 +46,11 @@ export const sessaoService = {
     },
     delete: async (id: number): Promise<void> => {
         await api.delete(`/apis/sessao/${id}`);
+    },
+    pausar: async (id: number): Promise<void> =>{
+        await api.post(`/apis/sessao/pausar/${id}`)
+    },
+    iniciar: async (id: number): Promise<void> =>{
+        await api.put(`/apis/sessao/iniciar/${id}`)
     }
 }

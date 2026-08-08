@@ -31,7 +31,7 @@ export function SessaoProvider({ children }: { children: ReactNode })
     else
     {
         try {
-        const dados = await sessaoService.getAllByStatus("RECUSADA", usuarioLogado?.id!);
+        const dados = await sessaoService.getAllByStatusId("RECUSADA", usuarioLogado?.id!);
         setQtdRecusadas(dados.length);
       } catch (error) {
         console.error("Erro ao Buscar Sessões Canceladas: ", error);

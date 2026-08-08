@@ -10,6 +10,7 @@ import { GerenciarExercicio } from '../features/exercicio/pages/GerenciarExercic
 import { GerenciarSessao } from '../features/sessao/pages/GerenciarSessao';
 import { AprovacaoSessao } from '../features/sessao/pages/AprovacaoSessao';
 import { Atendimento } from '../features/sessao/pages/Atendimento';
+import { ExecucaoSessao } from '../features/sessao/pages/ExecucaoSessao';
 export function AppRoutes()
 {
   const { usuarioLogado } = useAuth();
@@ -38,6 +39,7 @@ export function AppRoutes()
           <Route path="tipo-exercicio" element={<GerenciarTipoExercicio/>}></Route>
           <Route path="sessoes" element={<GerenciarSessao/>}></Route>
           <Route path="atendimento" element={<Atendimento/>}></Route>
+          <Route path="sessao/execucao/:id" element={<ExecucaoSessao/>}></Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
