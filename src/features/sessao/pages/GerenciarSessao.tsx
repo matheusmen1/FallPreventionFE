@@ -234,7 +234,7 @@ export function GerenciarSessao()
                     {sessao.responsavel ? sessao.responsavel.nome : 'Não Atribuído'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {sessao.sessaoFases ? `${sessao.sessaoFases.length} cenário(s)` : '-'}
+                    {sessao.sessaoFases ? `${sessao.sessaoFases.length} ambiente(s)` : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {renderBadgeStatus(sessao.status)}

@@ -23,7 +23,7 @@ export function Login() {
         <div className="text-center mb-8">
           <h1 className="text-4xl mb-2"></h1>
           <h2 className="text-2xl font-bold text-gray-800">Fall Prevention VR</h2>
-          <p className="text-gray-500 text-sm">Faça login para acessar o painel</p>
+          <p className="text-gray-500 text-sm"></p>
         </div>
 
         <form onSubmit={logar} className="space-y-6">

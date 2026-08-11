@@ -5,6 +5,7 @@ import { api } from '../services/api';
 
 interface AuthContextData {
   usuarioLogado: Usuario | null;
+  atualizarUsuarioLogado: (usuario: Usuario) => void;
   login: (email: string, senha: string) => Promise<void>;
   logout: () => void;
 }
@@ -17,7 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode })
   const [usuarioLogado, setUsuarioLogado] = useState<Usuario | null>(() => {
     const userStorage = localStorage.getItem('@ClinicaVR:usuario');
     if (userStorage) return JSON.parse(userStorage);
-    return null;
+      return null;
   });
 
   async function login(email: string, senha: string)
@@ -39,9 +40,13 @@ export function AuthProvider({ children }: { children: ReactNode })
     setUsuarioLogado(null);
     localStorage.removeItem('@ClinicaVR:usuario');
   }
+  function atualizarUsuarioLogado(usuario: Usuario) {
+    setUsuarioLogado(usuario);
+    localStorage.setItem('@ClinicaVR:usuario', JSON.stringify(usuario));
+  }
 
   return (
-    <AuthContext.Provider value={{ usuarioLogado, login, logout }}>
+    <AuthContext.Provider value={{ usuarioLogado, atualizarUsuarioLogado, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

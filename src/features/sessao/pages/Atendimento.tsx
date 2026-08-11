@@ -32,7 +32,7 @@ export function Atendimento()
       }
       else
       {
-        //alert("Sessão Não Pertence ao Usuário Logado")
+        alert("Sessão Não Pertence ao Usuário Logado")
       }
     }catch(error){
       console.log("Erro ao Iniciar Sessão: ", error)
@@ -80,12 +80,15 @@ export function Atendimento()
             <div className="p-5 flex-1 bg-gray-50/50">
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Ambiente(s) Virtuai(s)</h4>
               <ul className="space-y-2">
-                {sessao.sessaoFases.map(fase => (
-                  <li key={fase.ordem} className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100 shadow-sm flex items-center gap-2">
-                    <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.ordem}º</span>
-                    {fase.exercicio.nome}
-                  </li>
-                ))}
+                {sessao.sessaoFases
+                  .slice()
+                  .sort((a, b) => a.ordem - b.ordem)
+                  .map((fase) => (
+                    <li key={fase.ordem} className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100 shadow-sm flex items-center gap-2">
+                      <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.ordem}º</span>
+                      {fase.exercicio.nome}
+                    </li>
+                  ))}
               </ul>
 
             </div>

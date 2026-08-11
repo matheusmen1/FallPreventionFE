@@ -11,6 +11,8 @@ import { GerenciarSessao } from '../features/sessao/pages/GerenciarSessao';
 import { AprovacaoSessao } from '../features/sessao/pages/AprovacaoSessao';
 import { Atendimento } from '../features/sessao/pages/Atendimento';
 import { ExecucaoSessao } from '../features/sessao/pages/ExecucaoSessao';
+import { RelatorioObservacoes } from '../features/sessao/pages/RelatorioObservacoes';
+import { MeusDados } from '../features/usuario/components/MeusDados';
 export function AppRoutes()
 {
   const { usuarioLogado } = useAuth();
@@ -34,12 +36,15 @@ export function AppRoutes()
               <Route path="aprovacao-sessoes" element={<AprovacaoSessao/>}></Route>
             </>
           )}
+          <Route path="meus-dados" element={<MeusDados />} />
           <Route path="pacientes" element={<GerenciarPaciente />} />
           <Route path="exercicios" element={<GerenciarExercicio />} />
           <Route path="tipo-exercicio" element={<GerenciarTipoExercicio/>}></Route>
           <Route path="sessoes" element={<GerenciarSessao/>}></Route>
           <Route path="atendimento" element={<Atendimento/>}></Route>
           <Route path="sessao/execucao/:id" element={<ExecucaoSessao/>}></Route>
+          
+          <Route path="relatorio/observacao" element={<RelatorioObservacoes/>}></Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

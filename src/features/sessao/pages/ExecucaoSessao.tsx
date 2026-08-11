@@ -3,14 +3,22 @@ import { useParams } from 'react-router-dom';
 import type { Sessao } from '../types/sessao';
 import { sessaoService } from '../../../services/sessaoService';
 import { PainelTransmissao } from './PainelTransmissao';
+import { useNavigate } from 'react-router-dom';
+import type { SessaoObservacao } from '../types/sessaoObservacao';
 
 export function ExecucaoSessao() {
   const { id } = useParams();
   const [sessao, setSessao] = useState<Sessao>()
+  const [cont, setCont] = useState(0);
+  const navigate = useNavigate();
+
+  const [isModalAberto, setIsModalAberto] = useState(false);
+  const [observacao, setObservacao] = useState("");
+  const [isSalvandoObservacao, setIsSalvandoObservacao] = useState(false);
 
   useEffect(() => {
     carregarSessao();
-   
+
   }, []);
 
   async function carregarSessao() 
@@ -34,20 +42,50 @@ export function ExecucaoSessao() {
         if (id != null)
         {
             await sessaoService.pausar(Number.parseInt(id));
+            carregarSessao();
         }
     }catch(error){
         console.log("Erro ao Pausar Sessão: ", error)
     }
   }
-
-  async function onPularFase() {
-    
+  async function onRetomar()
+  {
+    try{
+        if (id != null)
+        {
+            await sessaoService.retomar(Number.parseInt(id));
+            carregarSessao();
+        }
+    }catch(error){
+        console.log("Erro ao Retomar Sessão: ", error)
+    }
+  }
+  async function onProximaFase() {
+    try{
+        if (id != null && cont < sessao?.sessaoFases.length!)
+        {
+          if (cont < sessao?.sessaoFases.length! - 1)  
+          {
+            await sessaoService.proximaFase(Number.parseInt(id));
+            setCont(cont + 1);
+            carregarSessao();
+          }
+          else
+          {
+            
+            alert("Todas as Fases Foram Concluídas.");
+          }
+        }
+    }catch(error){
+        console.log("Erro ao Avançar Fase: ", error)
+    }
   }
 
   async function onIniciar()
   {
     try{
       await sessaoService.iniciar(Number.parseInt(id!));
+      carregarSessao();
     }
     catch(error){
       alert("Conecte-se ao Meta Quest 3S Antes de Iniciar a Sessão")
@@ -58,6 +96,45 @@ export function ExecucaoSessao() {
   {
     
     // navigate(`/atendimento/avaliacao/${sessao.id}`);
+  }
+  async function onSairSala()
+  {
+    try
+    {
+      if (sessao != null && sessao.id != null)
+      {
+      
+       await sessaoService.sairSala(sessao.id);
+       navigate(`/atendimento`);
+      }
+      
+      
+    }catch(error){
+      console.log("Erro ao Sair da Sala: ", error)
+    }
+  }
+  async function onAddObservacao()
+  {
+    try{
+      if (sessao != null && sessao.id != null && observacao.trim() !== "")
+      {
+        setIsSalvandoObservacao(true);
+        const sessaoObservacao: SessaoObservacao = {
+          
+          observacao: observacao,
+          sessaoFase: sessao.sessaoFases[cont]
+        };
+        await sessaoService.addObservacao(sessaoObservacao, sessao.id);
+        setObservacao("");
+        setIsSalvandoObservacao(false);
+        setIsModalAberto(false);
+      }
+    }catch(error){
+      console.log("Erro ao Salvar Observação: ", error)
+    }
+    finally {
+      setIsSalvandoObservacao(false);
+    }
   }
    function calcularIdade(dataNascimento: string): number
   {
@@ -80,45 +157,51 @@ export function ExecucaoSessao() {
     <div className="flex h-[85vh] w-full bg-slate-900 font-sans overflow-hidden">
       
 
-      <div className="w-[35%] bg-white h-full flex flex-col shadow-2xl z-10">
+      <div className="w-[25%] bg-white h-full flex flex-col shadow-2xl z-10">
         
         <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold text-gray-800">{sessao?.paciente.nome}</h2>
-            <p className="text-sm text-gray-500">Idade: {calcularIdade(sessao?.paciente.data_nascimento!)} anos | Sessão #{id}</p>
+            <p className="text-sm text-gray-500">{calcularIdade(sessao?.paciente.data_nascimento!)} anos | Sessão #{id}</p>
           </div>
-          <button className="text-red-500 text-sm font-bold hover:underline">
+          <button onClick={onSairSala} className="text-red-500 text-sm font-bold hover:underline">
             Sair da Sala
           </button>
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Ambiente(s) Virtuai(s)</h3>
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Ambiente(s) Virtual(is)</h3>
           <div className="space-y-3">
-            {sessao?.sessaoFases.map(fase => {
-              const faseAtual = (sessao as any)?.faseAtual;
-              const isAtiva = fase.ordem === faseAtual;
-              const isPassada = fase.ordem < faseAtual;
-              
-              return (
-                <div key={fase.ordem} className={`p-4 rounded-lg border-2 transition-all ${
-                  isAtiva ? 'border-blue-500 bg-blue-50 shadow-md' : 
-                  isPassada ? 'border-green-200 bg-green-50 opacity-60' : 'border-gray-100 bg-white'
-                }`}>
-                  <div className="flex justify-between items-center">
-                    <span className={`font-bold ${isAtiva ? 'text-blue-700' : isPassada ? 'text-green-700' : 'text-gray-600'}`}>
-                      {fase.ordem}º - {fase.exercicio.nome}
-                    </span>
-                    {isAtiva && <span className="flex h-3 w-3 relative">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                    </span>}
-                    {isPassada && <span>✅</span>}
+            {(() => {
+              const faseAtual = Number((sessao as any)?.ordemAtual) || 0;
+              const fasesOrdenadas = sessao?.sessaoFases?.sort((a, b) => a.ordem - b.ordem) || [];
+
+              return fasesOrdenadas.map(fase => {
+                const isAtiva = fase.ordem === faseAtual;
+                const isPassada = fase.ordem < faseAtual;
+                
+                return (
+                  <div key={fase.ordem} className={`p-4 rounded-lg border-2 transition-all ${
+                    isAtiva ? 'border-blue-500 bg-blue-50 shadow-md' : 
+                    isPassada ? 'border-green-200 bg-green-50 opacity-60' : 'border-gray-100 bg-white'
+                  }`}>
+                    <div className="flex justify-between items-center">
+                      <span className={`font-bold ${isAtiva ? 'text-blue-700' : isPassada ? 'text-green-700' : 'text-gray-600'}`}>
+                        {fase.ordem}º - {fase.exercicio.nome}
+                      </span>
+                      {isAtiva && (
+                        <span className="flex h-3 w-3 relative">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                        </span>
+                      )}
+                      {isPassada && <span>✅</span>}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1 font-mono">{fase.exercicio.codigo_nome}</p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1 font-mono">{fase.exercicio.codigo_nome}</p>
-                </div>
-              )
-            })}
+                );
+              });
+            })()}
           </div>
         </div>
 
@@ -126,48 +209,141 @@ export function ExecucaoSessao() {
           
            <button 
             onClick={onIniciar}
-            className="py-3 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-100 font-bold rounded-lg transition-all active:scale-95"
-          >
-             Iniciar
+            disabled={sessao?.status !== 'APROVADA'}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+             Iniciar Sessão
           </button>
-          <button 
-            onClick={onPausar}
-            className="py-3 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-100 font-bold rounded-lg transition-all active:scale-95"
-          >
-            Pausar Fase
-          </button>
+         
 
           <button 
-            onClick={onPularFase}
-            className="py-3 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-100 font-bold rounded-lg transition-all active:scale-95"
-          >
-             Pular Fase
+            onClick={onProximaFase}
+            disabled={sessao?.status === 'APROVADA'}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+             Próxima Fase
           </button>
 
           <button 
             onClick={onFinalizar}
-            className="py-3 bg-white border-2 border-slate-300 text-slate-700 hover:bg-slate-100 font-bold rounded-lg transition-all active:scale-95"
-          >
+            disabled={sessao?.status === 'APROVADA'}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
              Finalizar Sessão
           </button>
+
+          
+           {sessao?.status === "EM_ANDAMENTO" && (
+            <button 
+            onClick={onPausar}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+            Pausar Fase
+          </button>
+          )}
+          {sessao?.status === "PAUSADA" && (
+            <button 
+              onClick={onRetomar}
+              className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+              Retomar Fase
+            </button>
+          )}
+          {sessao?.status !== "APROVADA" && (
+            <button 
+              onClick={() => setIsModalAberto(true)}
+              className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+              Adicionar Observação
+            </button>
+          )}
+          {sessao?.status !== "APROVADA" && (
+            <button 
+              className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+              Gravar
+            </button>
+          )}
         </div>
       </div>
 
     
-      <div className="w-[65%] h-full flex flex-col items-center justify-center relative p-8">
+      <div className="w-[75%] h-full flex flex-col items-center justify-center relative p-8">
         <PainelTransmissao />
         <div className="absolute bottom-8 right-8 flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
           <span className="flex h-3 w-3 relative">
-            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${sessao?.status === 'EM_ANDAMENTO' ? 'bg-green-400' : 'bg-yellow-400'}`}></span>
-            <span className={`relative inline-flex rounded-full h-3 w-3 ${sessao?.status === 'EM_ANDAMENTO' ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+             {sessao?.status === 'EM_ANDAMENTO' && (
+              <>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"> </span>
+              </>
+            )}
+            {sessao?.status === 'PAUSADA' && (
+              <>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"> </span>
+              </>
+              
+            )}
+            {sessao?.status === 'APROVADA' && (
+              <>
+               <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"> </span>
+               
+               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+              </>
+            )}
           </span>
-          <span className="text-slate-300 text-xs font-bold uppercase tracking-widest">
-            {sessao?.status === 'EM_ANDAMENTO' ? 'Conexão Ativa' : 'Em Pausa'}
-          </span>
+          {sessao?.status == 'APROVADA' && <span className="text-sm text-yellow-400 font-bold">Aguardando</span>}
+          {sessao?.status == 'EM_ANDAMENTO' && <span className="text-sm text-green-400 font-bold">Em andamento</span>}
+          {sessao?.status == 'PAUSADA' && <span className="text-sm text-red-400 font-bold">Pausada</span>}
+         
         </div>
 
       </div>
+      {isModalAberto && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-xl shadow-2xl w-[500px] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            
+            <div className="px-6 py-4 border-b border-gray-100 bg-slate-50 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                Nova Observação
+              </h3>
+              <button 
+                onClick={() => setIsModalAberto(false)}
+                className="text-gray-400 hover:text-red-500 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
 
+            <div className="p-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                
+              </label>
+              <textarea
+                className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                placeholder=""
+                value={observacao}
+                onChange={(e) => setObservacao(e.target.value)}
+                autoFocus
+              />
+              <p className="text-xs text-gray-500 mt-2">
+               
+              </p>
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+              <button
+                onClick={() => setIsModalAberto(false)}
+                className="px-4 py-2 font-semibold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={onAddObservacao}
+                disabled={isSalvandoObservacao || !observacao.trim()}
+                className="px-6 py-2 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSalvandoObservacao ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    
   );
 }

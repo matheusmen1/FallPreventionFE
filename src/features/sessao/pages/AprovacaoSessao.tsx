@@ -99,10 +99,13 @@ export function AprovacaoSessao()
               <div className="p-6 flex-1">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Ambiente(s) Virtuai(s)</h4>
                 <ul className="space-y-2">
-                  {sessao.sessaoFases.map(fase => (
-                    <li key={fase.ordem} className="flex gap-3 text-sm text-gray-700 bg-blue-50/50 p-2.5 rounded-md border border-blue-100">
-                      <span className="font-bold text-blue-600 w-5">{fase.ordem}º</span> 
-                      <span className="font-medium">{fase.exercicio.nome}</span>
+                  {sessao.sessaoFases
+                  .slice()
+                  .sort((a, b) => a.ordem - b.ordem)
+                  .map((fase) => (
+                    <li key={fase.ordem} className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100 shadow-sm flex items-center gap-2">
+                      <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.ordem}º</span>
+                      {fase.exercicio.nome}
                     </li>
                   ))}
                 </ul>

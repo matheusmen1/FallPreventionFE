@@ -99,7 +99,9 @@ export function Layout() {
               Relatórios
             </h3>
             <div className="flex flex-col gap-1">
-              
+              <Link to="/relatorio/observacao" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+                Observações
+              </Link>
             </div>
           </div>      
         </nav>
@@ -141,8 +143,8 @@ export function Layout() {
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200 z-50 animate-fade-in-up">
         
                 <Link 
-                  to={`/usuarios/editar/${usuarioLogado?.id}`} 
-                  onClick={() => setDropdownAberto(false)}
+                    to="/meus-dados"
+                    onClick={() => setDropdownAberto(false)}
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   Meus Dados
