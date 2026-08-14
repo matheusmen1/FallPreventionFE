@@ -5,17 +5,17 @@ import { sessaoService } from '../../../services/sessaoService';
 import { PainelTransmissao } from './PainelTransmissao';
 import { useNavigate } from 'react-router-dom';
 import type { SessaoObservacao } from '../types/sessaoObservacao';
-
+import { useSessao } from '../../../contexts/SessaoContext';
 export function ExecucaoSessao() {
   const { id } = useParams();
   const [sessao, setSessao] = useState<Sessao>()
   const [cont, setCont] = useState(0);
   const navigate = useNavigate();
-
+  const { carregarSessoesAprovadas, atualizarSessoes } = useSessao();
   const [isModalAberto, setIsModalAberto] = useState(false);
   const [observacao, setObservacao] = useState("");
   const [isSalvandoObservacao, setIsSalvandoObservacao] = useState(false);
-
+  const [isGravando, setIsGravando] = useState(false);
   useEffect(() => {
     carregarSessao();
 
@@ -86,6 +86,7 @@ export function ExecucaoSessao() {
     try{
       await sessaoService.iniciar(Number.parseInt(id!));
       carregarSessao();
+      carregarSessoesAprovadas();
     }
     catch(error){
       alert("Conecte-se ao Meta Quest 3S Antes de Iniciar a Sessão")
@@ -105,6 +106,7 @@ export function ExecucaoSessao() {
       {
       
        await sessaoService.sairSala(sessao.id);
+       carregarSessoesAprovadas();
        navigate(`/atendimento`);
       }
       
@@ -206,15 +208,23 @@ export function ExecucaoSessao() {
         </div>
 
         <div className="p-6 bg-gray-50 border-t border-gray-200 grid grid-cols-2 gap-3">
-          
+
            <button 
             onClick={onIniciar}
             disabled={sessao?.status !== 'APROVADA'}
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
              Iniciar Sessão
           </button>
-         
+             <button 
+            onClick={onFinalizar}
+            disabled={sessao?.status === 'APROVADA'}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+             Finalizar Sessão
+          </button>
 
+         </div>
+        <div className="p-6 bg-gray-50 border-t border-gray-200 grid grid-cols-2 gap-3">
+          
           <button 
             onClick={onProximaFase}
             disabled={sessao?.status === 'APROVADA'}
@@ -222,47 +232,50 @@ export function ExecucaoSessao() {
              Próxima Fase
           </button>
 
-          <button 
-            onClick={onFinalizar}
-            disabled={sessao?.status === 'APROVADA'}
-            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-             Finalizar Sessão
-          </button>
-
-          
-           {sessao?.status === "EM_ANDAMENTO" && (
-            <button 
-            onClick={onPausar}
-            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-            Pausar Fase
-          </button>
-          )}
-          {sessao?.status === "PAUSADA" && (
-            <button 
-              onClick={onRetomar}
-              className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-              Retomar Fase
-            </button>
-          )}
-          {sessao?.status !== "APROVADA" && (
             <button 
               onClick={() => setIsModalAberto(true)}
+              disabled={sessao?.status === 'APROVADA'}
               className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
               Adicionar Observação
             </button>
-          )}
-          {sessao?.status !== "APROVADA" && (
-            <button 
+          
+         
+          <button 
+            onClick={onPausar}
+            disabled={sessao?.status !== 'EM_ANDAMENTO'}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+            Pausar Fase
+          </button>
+           <button 
+              onClick={onRetomar}
+              disabled={sessao?.status !== 'PAUSADA'}
               className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-              Gravar
+              Retomar Fase 
             </button>
-          )}
+
+            
+
+          <button 
+            onClick={() => setIsGravando(true)}
+            disabled={sessao?.status !== 'EM_ANDAMENTO' || isGravando}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+            Gravar Sessão
+          </button>
+           <button 
+            onClick={() => setIsGravando(false)}
+            disabled={sessao?.status !== 'EM_ANDAMENTO' || !isGravando}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+            Parar Gravação
+          </button>
+          
+          
         </div>
+      
       </div>
 
     
       <div className="w-[75%] h-full flex flex-col items-center justify-center relative p-8">
-        <PainelTransmissao />
+        <PainelTransmissao isGravacao={isGravando} sessaoId={sessao?.id || 0} />
         <div className="absolute bottom-8 right-8 flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
           <span className="flex h-3 w-3 relative">
              {sessao?.status === 'EM_ANDAMENTO' && (

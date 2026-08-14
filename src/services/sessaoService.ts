@@ -2,7 +2,7 @@ import { api } from "./api";
 import type { Sessao } from "../features/sessao/types/sessao";
 import type { AprovacaoSessao } from "../features/sessao/types/aprovacaoSessao";
 import type { SessaoObservacao } from "../features/sessao/types/sessaoObservacao";
-
+import type { SessaoGravacao } from "../features/sessao/types/sessaoGravacao";
 export const sessaoService = {
 
     getAll: async (): Promise<Sessao[]> => {
@@ -58,6 +58,9 @@ export const sessaoService = {
     deleteObservacao: async (id: number): Promise<void> => {
         await api.delete(`/apis/sessao/observacao/${id}`);
     },
+    deleteGravacao: async (id: number): Promise<void> => {
+        await api.delete(`/apis/sessao/gravacao/${id}`);
+    },
     pausar: async (id: number): Promise<void> =>{
         await api.put(`/apis/sessao/pausar/${id}`)
     },
@@ -72,5 +75,24 @@ export const sessaoService = {
     }, 
     retomar: async (id: number): Promise<void> =>{
         await api.put(`/apis/sessao/retomar/${id}`)
+    },
+    getAllGravacoesBySessao: async (sessaoId: number, pacienteId: number): Promise<SessaoGravacao[]> => {
+        const response = await api.get(`/apis/sessao/gravacoes/${sessaoId}/${pacienteId}`);
+        return response.data;
+    },
+    addGravacao: async (sessaoId: number, videoBlob: Blob): Promise<void> => {
+        const formData = new FormData();
+        formData.append('video', videoBlob, `gravacao_${sessaoId}.webm`);
+        await api.post(`/apis/sessao/gravacao/${sessaoId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
+    playGravacao: async (gravacaoId: number): Promise<Blob> => {
+        const response = await api.get(`/apis/sessao/gravacao/play/${gravacaoId}`, {
+            responseType: 'blob',
+        });
+        return response.data;
     }
 }

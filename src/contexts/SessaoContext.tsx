@@ -5,6 +5,8 @@ import { useAuth } from './AutoContext';
 interface SessaoContextData {
   qtdPendentes: number;
   qtdRecusadas: number;
+  qtdeAprovadas: number;
+  carregarSessoesAprovadas: () => Promise<void>;
   atualizarSessoes: () => Promise<void>;
 }
 
@@ -14,6 +16,7 @@ export function SessaoProvider({ children }: { children: ReactNode })
 {
   const [qtdPendentes, setQtdPendentes] = useState(0);
   const [qtdRecusadas, setQtdRecusadas] = useState(0);
+  const [qtdeAprovadas, setQtdeAprovadas] = useState(0);
 
   const { usuarioLogado } = useAuth();
 
@@ -38,13 +41,25 @@ export function SessaoProvider({ children }: { children: ReactNode })
       }
     }
   }
-
+  async function carregarSessoesAprovadas()
+  {
+    if (usuarioLogado)
+    {
+      try {
+        const dados = await sessaoService.getAllByStatus("APROVADA");
+        setQtdeAprovadas(dados.length);
+      } catch (error) {
+        console.error("Erro ao Buscar Sessões Aprovadas: ", error);
+      }
+    }
+  }
   useEffect(() => {
     atualizarSessoes();
+    carregarSessoesAprovadas();
   }, [usuarioLogado]);
 
   return (
-    <SessaoContext.Provider value={{ qtdPendentes, qtdRecusadas, atualizarSessoes }}>
+    <SessaoContext.Provider value={{ qtdPendentes, qtdRecusadas, qtdeAprovadas, atualizarSessoes, carregarSessoesAprovadas }}>
       {children}
     </SessaoContext.Provider>
   );

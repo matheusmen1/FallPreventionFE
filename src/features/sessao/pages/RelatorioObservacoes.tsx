@@ -63,10 +63,12 @@ export function RelatorioObservacoes()
   async function onExcluirObservacao(id: number)
   {
     try{
-        await sessaoService.deleteObservacao(id);
+      if (confirm("Tem Certeza que Deseja Excluir esta Observação?")) { 
+      await sessaoService.deleteObservacao(id);
         if (sessaoSelecionada !== '' && pacienteSelecionado !== '') {
             carregarObservacoesBySessaoIdAndPacienteId(sessaoSelecionada as number, pacienteSelecionado as number);
         }
+      }
     }catch(error){
         console.error("Erro ao Excluir Observação:", error);
     }
@@ -139,7 +141,7 @@ export function RelatorioObservacoes()
               </option>
               {sessoes.map((sessao) => (
                 <option key={sessao.id} value={sessao.id}>
-                  Sessão #{sessao.id} - {formatarData(sessao.data_hora)} - {sessao.status}
+                  Sessão - {formatarData(sessao.data_hora)} - {sessao.status}
                 </option>
               ))}
             </select>
@@ -160,6 +162,9 @@ export function RelatorioObservacoes()
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/4">
                 Observação
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ações
               </th>
             </tr>
           </thead>
@@ -202,7 +207,7 @@ export function RelatorioObservacoes()
                   <td className="px-6 py-4 text-sm text-gray-500 whitespace-pre-wrap">
                     {obs.observacao || '-'}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
                           onClick={() => onExcluirObservacao(obs.id!)} 
                           className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 active:scale-95 transition-all duration-100"

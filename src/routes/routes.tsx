@@ -13,6 +13,7 @@ import { Atendimento } from '../features/sessao/pages/Atendimento';
 import { ExecucaoSessao } from '../features/sessao/pages/ExecucaoSessao';
 import { RelatorioObservacoes } from '../features/sessao/pages/RelatorioObservacoes';
 import { MeusDados } from '../features/usuario/components/MeusDados';
+import { RelatorioGravacoes } from '../features/sessao/pages/RelatorioGravacoes';
 export function AppRoutes()
 {
   const { usuarioLogado } = useAuth();
@@ -43,7 +44,7 @@ export function AppRoutes()
           <Route path="sessoes" element={<GerenciarSessao/>}></Route>
           <Route path="atendimento" element={<Atendimento/>}></Route>
           <Route path="sessao/execucao/:id" element={<ExecucaoSessao/>}></Route>
-          
+          <Route path="relatorio/gravacoes" element={<RelatorioGravacoes/>}></Route>
           <Route path="relatorio/observacao" element={<RelatorioObservacoes/>}></Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

@@ -23,7 +23,7 @@ export function Atendimento()
   }
   async function iniciarSessao(idSessao: number)
   {
-    if (usuarioLogado != null  && usuarioLogado.id != null)
+    if (usuarioLogado != null && usuarioLogado.id != null)
     try{
       const dados = await sessaoService.getById(idSessao);
       if (dados.responsavel.id === usuarioLogado.id)
@@ -60,11 +60,16 @@ export function Atendimento()
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Sessões Agendadas</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Sessões Disponíveis</h1>
         </div>
       </div>
-
+      {sessoes.length === 0 && (
+        <div className="bg-white p-8 rounded-lg shadow border border-gray-200 text-center text-gray-500">
+          Nenhuma Sessão Disponível Encontrada.
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
         {sessoes.map(sessao => (
           <div key={sessao.id} className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden flex flex-col">
             
@@ -98,7 +103,7 @@ export function Atendimento()
                   onClick={() => iniciarSessao(sessao.id!)}
                   className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all text-white font-bold rounded-lg shadow-md flex justify-center items-center gap-2"
                 >
-                  ▶ INICIAR SESSÃO
+                  ABRIR SALA
                 </button>
             </div>
           </div>

@@ -22,7 +22,7 @@ export function GerenciarSessao()
   const [sessaoEmEdicao, setSessaoEmEdicao] = useState<Sessao | null>(null);
 
   const { usuarioLogado } = useAuth();
-  const { atualizarSessoes } = useSessao();
+  const { atualizarSessoes, carregarSessoesAprovadas } = useSessao();
   const [btSelecionado, setBtSelecionado] = useState(false);
 
   useEffect(() => {
@@ -111,6 +111,13 @@ export function GerenciarSessao()
       setExibirFormulario(false); 
       carregarSessoes(); 
       atualizarSessoes();
+      if (usuarioLogado && usuarioLogado.id != null)
+      {
+        if (usuarioLogado.nivel > 0)
+        {
+          carregarSessoesAprovadas();
+        }
+      }
     } catch (error) {
       console.error("Erro ao salvar:", error);
       alert("Erro ao salvar a sessão.");
@@ -129,6 +136,8 @@ export function GerenciarSessao()
       try {
         await sessaoService.delete(sessao.id);
         carregarSessoes(); 
+        carregarSessoesAprovadas();
+        atualizarSessoes();
       } catch (error) {
         console.error("Erro ao excluir:", error);
         alert("Erro ao excluir a sessão.");

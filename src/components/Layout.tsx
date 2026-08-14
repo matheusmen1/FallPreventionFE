@@ -5,7 +5,7 @@ import { useSessao } from '../contexts/SessaoContext';
 
 export function Layout() {
   const { usuarioLogado, logout } = useAuth();
-  const { qtdPendentes, qtdRecusadas } = useSessao();
+  const { qtdPendentes, qtdRecusadas, qtdeAprovadas } = useSessao();
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -33,34 +33,22 @@ export function Layout() {
         
         <nav className="flex-1 p-4 flex flex-col gap-6 overflow-y-auto mt-2">
           
-          <div>
-            <h3 className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-              Atendimento
-            </h3>
-            <div className="flex flex-col gap-1">
-              <Link to="/atendimento" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors flex items-center gap-2 font-medium text-emerald-400">
-                Painel Ao Vivo
-              </Link>
-              
-            </div>
-          </div>
-
+       
           <div>
             <h3 className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
               Sessões
             </h3>
-            <div className="flex flex-col gap-1">
-              <Link to="/sessoes" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
-                <span> Agendamento </span>
-              {qtdRecusadas > 0 && (
-                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">
-                  {qtdRecusadas}
-                </span>
-              )}
+            <Link to="/atendimento" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors flex items-center gap-2 font-medium text-emerald-400">
+                Sessões Disponíveis
+                {qtdeAprovadas > 0 && (
+                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">
+                    {qtdeAprovadas}
+                  </span>
+                )}
               </Link>
               {usuarioLogado?.nivel === 1 && (
                 <Link to="/aprovacao-sessoes" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors flex justify-between items-center">
-                  <span>Aguardando Aprovação</span>
+                  <span>Sessões Pendentes</span>
                   {qtdPendentes > 0 && (
                     <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                       {qtdPendentes}
@@ -68,6 +56,16 @@ export function Layout() {
                   )}
                 </Link>
               )}
+            <div className="flex flex-col gap-1">
+              <Link to="/sessoes" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+                <span> Nova Sessão </span>
+              {qtdRecusadas > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">
+                  {qtdRecusadas}
+                </span>
+              )}
+              </Link>
+              
             </div>
           </div>
 
@@ -101,6 +99,9 @@ export function Layout() {
             <div className="flex flex-col gap-1">
               <Link to="/relatorio/observacao" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
                 Observações
+              </Link>
+              <Link to="/relatorio/gravacoes" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+                Gravações
               </Link>
             </div>
           </div>      

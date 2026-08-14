@@ -1,14 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
+import { sessaoService } from '../../../services/sessaoService';
 
-export function PainelTransmissao()
+interface PainelTransmissaoProps {
+  isGravacao: boolean;
+  sessaoId: number;
+}
+export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProps)
 { 
   const videoRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const [status, setStatus] = useState("Aguardando conexão do Meta Quest 3S...");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    if (isGravacao) {
+      iniciarGravacao();
+    } else {
+      pararGravacao();
+    }
+  }, [isGravacao]); // sempre quando houver mudanças
 
   useEffect(() =>
   {
+   
     wsRef.current = new WebSocket("ws://192.168.15.8:8080/ws/webrtc"); 
 
     const pc = new RTCPeerConnection({
@@ -63,7 +79,39 @@ export function PainelTransmissao()
       wsRef.current?.close();
     };
   }, []);
+  const iniciarGravacao = () => {
+    const stream = videoRef.current?.srcObject as MediaStream;
+    
+    if (stream) {
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = []; 
 
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      };
+      mediaRecorder.onstop = async () => {
+        console.log("Processando vídeo para envio...");
+    
+        const videoBlob = new Blob(chunksRef.current, { type: 'video/webm' });
+        
+        try {
+          await sessaoService.addGravacao(sessaoId, videoBlob);
+          alert("Gravação salva com sucesso no servidor da Unoeste!");
+        } catch (error) {
+          console.error("Erro ao enviar o vídeo:", error);
+          alert("Erro ao salvar a gravação. Verifique a conexão com o servidor.");
+        }
+      };
+      mediaRecorder.start();
+    }
+  };
+
+  const pararGravacao = () => {
+    mediaRecorderRef.current?.stop();
+  };
   return (
     <div className="w-full max-w-[90%] flex flex-col items-center justify-center">
       <div className="w-full flex justify-between items-center mb-4 px-2">

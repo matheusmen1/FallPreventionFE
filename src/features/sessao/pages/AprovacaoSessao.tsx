@@ -14,7 +14,7 @@ export function AprovacaoSessao()
   const [motivoRecusa, setMotivoRecusa] = useState('');
 
   const { usuarioLogado } = useAuth();
-  const { atualizarSessoes } = useSessao();
+  const { atualizarSessoes, carregarSessoesAprovadas } = useSessao();
    useEffect(() => {
       carregarSessoesPendentes();
     }, []);
@@ -40,9 +40,11 @@ export function AprovacaoSessao()
       };
       await sessaoService.aprovarSessao(novoAprovacaoSessao, idSessao)
       carregarSessoesPendentes();
+      carregarSessoesAprovadas();
       atualizarSessoes();
     }
   }
+  
 
   function abrirModalRecusa(id: number) {
     setSessaoSelecionada(id);
@@ -72,11 +74,11 @@ export function AprovacaoSessao()
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Revisão de Sessões Pendentes</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Sessões Pendentes</h1>
         <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
           {sessoes.length} Aguardando Análise
         </span>
-      </div>
+    </div>
 
       {sessoes.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow border border-gray-200 text-center text-gray-500">
