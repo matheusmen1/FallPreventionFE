@@ -11,8 +11,11 @@ export function ExecucaoSessao() {
   const [sessao, setSessao] = useState<Sessao>()
   const [cont, setCont] = useState(0);
   const navigate = useNavigate();
-  const { carregarSessoesAprovadas, atualizarSessoes } = useSessao();
+  const { carregarSessoesAprovadas } = useSessao();
   const [isModalAberto, setIsModalAberto] = useState(false);
+  const [isModalAbertoMensagem, setIsModalAbertoMensagem] = useState(false);
+  const [mensagem, setMensagem] = useState("");
+  const [isSalvandoMensagem, setIsSalvandoMensagem] = useState(false);
   const [observacao, setObservacao] = useState("");
   const [isSalvandoObservacao, setIsSalvandoObservacao] = useState(false);
   const [isGravando, setIsGravando] = useState(false);
@@ -138,6 +141,23 @@ export function ExecucaoSessao() {
       setIsSalvandoObservacao(false);
     }
   }
+  async function onEnviarMensagem(mensagem: string)
+  {
+    try{
+      if (mensagem.trim() !== "")
+      {
+        await sessaoService.enviarMensagem(mensagem);
+        setMensagem("");
+        setIsModalAbertoMensagem(false);
+        setIsSalvandoObservacao(false);
+      }
+    }catch(error){
+      console.log("Erro ao Enviar Mensagem: ", error)
+    }
+    finally {
+      setIsSalvandoMensagem(false);
+    }
+  }
    function calcularIdade(dataNascimento: string): number
   {
     const nascimento = new Date(dataNascimento);
@@ -221,7 +241,7 @@ export function ExecucaoSessao() {
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
              Finalizar Sessão
           </button>
-
+          
          </div>
         <div className="p-6 bg-gray-50 border-t border-gray-200 grid grid-cols-2 gap-3">
           
@@ -268,11 +288,18 @@ export function ExecucaoSessao() {
             Parar Gravação
           </button>
           
-          
+        
         </div>
-      
+            <div className="p-6 bg-gray-50 border-t border-gray-200 grid grid-cols-1 gap-3">
+            <button 
+            onClick={() => setIsModalAbertoMensagem(true)}
+            disabled={sessao?.status === 'APROVADA'}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+            Enviar Mensagem
+          </button>
+        </div>
       </div>
-
+            
     
       <div className="w-[75%] h-full flex flex-col items-center justify-center relative p-8">
         <PainelTransmissao isGravacao={isGravando} sessaoId={sessao?.id || 0} />
@@ -351,6 +378,59 @@ export function ExecucaoSessao() {
                 className="px-6 py-2 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isSalvandoObservacao ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isModalAbertoMensagem && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-xl shadow-2xl w-[500px] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            
+            <div className="px-6 py-4 border-b border-gray-100 bg-slate-50 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                Nova Mensagem
+              </h3>
+              <button 
+                onClick={() => setIsModalAbertoMensagem(false)}
+                className="text-gray-400 hover:text-red-500 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Mensagem
+              </label>
+              <textarea
+                className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                placeholder="Digite sua Mensagem Aqui..."
+                value={mensagem}
+                onChange={(e) => setMensagem(e.target.value)}
+                autoFocus
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Sua Mensagem Será Enviada Para o Paciente.
+              </p>
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+              <button
+                onClick={() => setIsModalAbertoMensagem(false)}
+                className="px-4 py-2 font-semibold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  onEnviarMensagem(mensagem);
+                  
+                }}
+                disabled={isSalvandoMensagem || !mensagem.trim()}
+                className="px-6 py-2 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSalvandoMensagem ? 'Enviando...' : 'Enviar'}
               </button>
             </div>
           </div>

@@ -94,5 +94,8 @@ export const sessaoService = {
             responseType: 'blob',
         });
         return response.data;
+    },
+    enviarMensagem: async (mensagem: string): Promise<void> => {
+        await api.put(`/apis/sessao/mensagem/${mensagem}`);
     }
 }

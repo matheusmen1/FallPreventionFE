@@ -25,7 +25,7 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
   useEffect(() =>
   {
    
-    wsRef.current = new WebSocket("ws://192.168.15.8:8080/ws/webrtc"); 
+    wsRef.current = new WebSocket("ws://192.168.15.9:8080/ws/webrtc"); 
 
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
@@ -99,10 +99,10 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
         
         try {
           await sessaoService.addGravacao(sessaoId, videoBlob);
-          alert("Gravação salva com sucesso no servidor da Unoeste!");
+          alert("Gravação Salva com Sucesso");
         } catch (error) {
           console.error("Erro ao enviar o vídeo:", error);
-          alert("Erro ao salvar a gravação. Verifique a conexão com o servidor.");
+          alert("Erro ao Salvar Gravação");
         }
       };
       mediaRecorder.start();
