@@ -76,7 +76,7 @@ export function ExecucaoSessao() {
           else
           {
             
-            alert("Todas as Fases Foram Concluídas.");
+            alert("Todas as Atividades Foram Concluídas.");
           }
         }
     }catch(error){
@@ -100,6 +100,33 @@ export function ExecucaoSessao() {
   {
     
     // navigate(`/atendimento/avaliacao/${sessao.id}`);
+  }
+  async function onReiniciarSessao()
+  {
+    try{
+      if (sessao != null && sessao.id != null)
+      {
+        setCont(0);
+        setIsGravando(false);
+        //await sessaoService.retomar(sessao.id);
+        await sessaoService.reiniciarSessao(sessao.id);
+        carregarSessao();
+      }
+        
+
+    }catch(error){
+      console.log("Erro ao Reiniciar Sessão: ", error)
+    }
+  }
+  async function onReiniciarExercicio()
+  {
+    try{
+      {
+        await sessaoService.reiniciarExercicio();
+      }
+    }catch(error){
+      console.log("Erro ao Reiniciar Exercício: ", error)
+    }
   }
   async function onSairSala()
   {
@@ -184,7 +211,9 @@ export function ExecucaoSessao() {
         <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold text-gray-800">{sessao?.paciente.nome}</h2>
-            <p className="text-sm text-gray-500">{calcularIdade(sessao?.paciente.data_nascimento!)} anos | Sessão #{id}</p>
+            <p className="text-sm text-gray-500">{calcularIdade(sessao?.paciente.data_nascimento!)} anos</p>
+            
+          
           </div>
           <button onClick={onSairSala} className="text-red-500 text-sm font-bold hover:underline">
             Sair da Sala
@@ -192,7 +221,7 @@ export function ExecucaoSessao() {
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Ambiente(s) Virtual(is)</h3>
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Atividade(s) Selecionada(s)</h3>
           <div className="space-y-3">
             {(() => {
               const faseAtual = Number((sessao as any)?.ordemAtual) || 0;
@@ -209,7 +238,7 @@ export function ExecucaoSessao() {
                   }`}>
                     <div className="flex justify-between items-center">
                       <span className={`font-bold ${isAtiva ? 'text-blue-700' : isPassada ? 'text-green-700' : 'text-gray-600'}`}>
-                        {fase.ordem}º - {fase.exercicio.nome}
+                        {fase.ordem}º - {fase.exercicio.nome} - Repetições: {fase.repeticao}
                       </span>
                       {isAtiva && (
                         <span className="flex h-3 w-3 relative">
@@ -241,6 +270,19 @@ export function ExecucaoSessao() {
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
              Finalizar Sessão
           </button>
+          <button 
+            onClick={onReiniciarExercicio}
+            disabled={sessao?.status === 'APROVADA'}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+             Reiniciar Exercício
+          </button>
+          <button 
+            onClick={onReiniciarSessao}
+            disabled={sessao?.status === 'APROVADA'}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+             Reiniciar Sessão
+          </button>
+             
           
          </div>
         <div className="p-6 bg-gray-50 border-t border-gray-200 grid grid-cols-2 gap-3">
@@ -261,31 +303,23 @@ export function ExecucaoSessao() {
           
          
           <button 
-            onClick={onPausar}
-            disabled={sessao?.status !== 'EM_ANDAMENTO'}
-            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-            Pausar Fase
+            onClick={sessao?.status === 'PAUSADA' ? onRetomar : onPausar}
+            disabled={sessao?.status !== 'EM_ANDAMENTO' && sessao?.status !== 'PAUSADA'}
+            className="py-3 border-2 font-bold rounded-lg transition-all bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95 disabled:bg-slate-200 disabled:border-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {sessao?.status === 'PAUSADA' ? 'Retomar Fase' : 'Pausar Fase'}
           </button>
-           <button 
-              onClick={onRetomar}
-              disabled={sessao?.status !== 'PAUSADA'}
-              className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-              Retomar Fase 
-            </button>
-
-            
 
           <button 
-            onClick={() => setIsGravando(true)}
-            disabled={sessao?.status !== 'EM_ANDAMENTO' || isGravando}
-            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-            Gravar Sessão
-          </button>
-           <button 
-            onClick={() => setIsGravando(false)}
-            disabled={sessao?.status !== 'EM_ANDAMENTO' || !isGravando}
-            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-            Parar Gravação
+            onClick={() => setIsGravando(!isGravando)} 
+            disabled={sessao?.status !== 'EM_ANDAMENTO'}
+            className={`py-3 border-2 font-bold rounded-lg transition-all active:scale-95 disabled:bg-slate-200 disabled:border-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed disabled:opacity-70 
+              ${isGravando 
+                ? 'bg-red-50 border-red-300 text-red-600 hover:bg-red-100' 
+                : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100' 
+              }`}
+          >
+            {isGravando ? 'Parar Gravação' : 'Gravar Sessão'}
           </button>
           
         
@@ -351,17 +385,17 @@ export function ExecucaoSessao() {
 
             <div className="p-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                
+                Observação
               </label>
               <textarea
                 className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                placeholder=""
+                placeholder="Digite sua Observação Aqui..."
                 value={observacao}
                 onChange={(e) => setObservacao(e.target.value)}
                 autoFocus
               />
               <p className="text-xs text-gray-500 mt-2">
-               
+                Sua Observação Será Adicionada à Sessão.
               </p>
             </div>
 

@@ -99,7 +99,7 @@ export function AprovacaoSessao()
               </div>
               
               <div className="p-6 flex-1">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Ambiente(s) Virtuai(s)</h4>
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Atividade(s) Selecionada(s)</h4>
                 <ul className="space-y-2">
                   {sessao.sessaoFases
                   .slice()
@@ -108,11 +108,20 @@ export function AprovacaoSessao()
                     <li key={fase.ordem} className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100 shadow-sm flex items-center gap-2">
                       <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.ordem}º</span>
                       {fase.exercicio.nome}
+                      <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">Repetições: {fase.repeticao}</span>
                     </li>
                   ))}
                 </ul>
+                
               </div>
-
+              <div className="p-6 flex-1">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Observações</h4>
+                {sessao.observacao ? (
+                  <p className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100 shadow-sm">{sessao.observacao}</p>
+                ) : (
+                  <p className="text-sm text-gray-500">Nenhuma Observação Encontrada.</p>
+                )}
+              </div>
               <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex gap-3">
                 <button 
                   onClick={() => onAprovarSessaoPendente(sessao.id!)}
@@ -140,7 +149,7 @@ export function AprovacaoSessao()
             </p>
             <textarea 
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 mb-5 h-32 resize-none text-sm text-gray-700"
-              placeholder="Ex: Reagendado para tal dia, remova tal fase, etc..."
+              placeholder="Digite aqui o motivo de recusa..."
               value={motivoRecusa}
               onChange={e => setMotivoRecusa(e.target.value)}
             ></textarea>

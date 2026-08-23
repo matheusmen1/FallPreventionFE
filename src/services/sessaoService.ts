@@ -97,5 +97,11 @@ export const sessaoService = {
     },
     enviarMensagem: async (mensagem: string): Promise<void> => {
         await api.put(`/apis/sessao/mensagem/${mensagem}`);
+    },
+    reiniciarSessao: async (sessaoId: number): Promise<void> => {
+        await api.put(`/apis/sessao/reiniciar/${sessaoId}`);
+    },
+    reiniciarExercicio: async (): Promise<void> => {
+        await api.put(`/apis/sessao/reiniciar-exercicio`);
     }
 }

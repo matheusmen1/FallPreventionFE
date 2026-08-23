@@ -25,7 +25,7 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
   useEffect(() =>
   {
    
-    wsRef.current = new WebSocket("ws://192.168.15.9:8080/ws/webrtc"); 
+    wsRef.current = new WebSocket("ws://192.168.15.12:8080/ws/webrtc"); 
 
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
@@ -129,7 +129,7 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
           ref={videoRef} 
           autoPlay 
           playsInline 
-          muted 
+          muted
           className="w-full h-full object-cover"
         />
         

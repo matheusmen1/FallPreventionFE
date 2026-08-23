@@ -3,4 +3,5 @@ export interface SessaoFase {
   id?: number;
   exercicio: Exercicio;
   ordem: number;
+  repeticao: number;
 }

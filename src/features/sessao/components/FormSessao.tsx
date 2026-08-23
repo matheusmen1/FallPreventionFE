@@ -4,6 +4,7 @@ import type { Paciente } from '../../paciente/types/paciente';
 import type { Exercicio } from '../../exercicio/types/exercicio'; 
 import type { SessaoFase } from '../types/sessaoFase'; 
 import { useAuth } from '../../../contexts/AutoContext'; 
+
 interface FormProps {
   onCancelar: () => void;
   onSalvar: (sessao: Sessao) => void;
@@ -21,15 +22,17 @@ export function FormSessao({
 }: FormProps) {
   
   const { usuarioLogado } = useAuth(); 
+  
+  const [passoAtual, setPassoAtual] = useState(1);
+
   const [formData, setFormData] = useState<Partial<Sessao>>({
     data_hora: '',
     status: 'Pendente',
     paciente: undefined,
     responsavel: usuarioLogado!, 
     sessaoFases: [],
+    observacao: ''
   });
-
-  const [exercicioSelecionadoId, setExercicioSelecionadoId] = useState<string>('');
 
   useEffect(() => {
     if (sessaoParaAlterar) {
@@ -46,28 +49,26 @@ export function FormSessao({
     }
   }, [sessaoParaAlterar]);
 
-  function adicionarFase() {
-    if (!exercicioSelecionadoId) return;
-
-    const exercicioCompleto = listaExercicios.find(ex => ex.id === Number(exercicioSelecionadoId));
+  function adicionarFase(exercicioId: number) {
+    const exercicioCompleto = listaExercicios.find(ex => ex.id === exercicioId);
     if (!exercicioCompleto) return;
 
     const fasesAtuais = formData.sessaoFases || [];
     
     const novaFase: SessaoFase = {
       exercicio: exercicioCompleto,
-      ordem: fasesAtuais.length + 1 
+      ordem: fasesAtuais.length + 1,
+      repeticao: 1 
     };
 
     setFormData({
       ...formData,
       sessaoFases: [...fasesAtuais, novaFase]
     });
-
-    setExercicioSelecionadoId(''); 
   }
 
-  function removerFase(indexParaRemover: number) {
+  function removerFase(indexParaRemover: number)
+   {
     const fasesAtuais = [...(formData.sessaoFases || [])];
     fasesAtuais.splice(indexParaRemover, 1);
     
@@ -78,144 +79,320 @@ export function FormSessao({
     setFormData({ ...formData, sessaoFases: fasesAtuais });
   }
 
+  function alterarRepeticoes(index: number, alteracao: number) 
+  {
+    const fasesAtuais = [...(formData.sessaoFases || [])];
+    
+    const qtdAtual = fasesAtuais[index].repeticao || 1;
+    
+    const novaQtd = Math.max(1, qtdAtual + alteracao);
+    
+    fasesAtuais[index].repeticao = novaQtd;
+    
+    setFormData({ ...formData, sessaoFases: fasesAtuais });
+  }
+
+  const podeAvancar = () => {
+    if (passoAtual === 1) return !!formData.paciente;
+    if (passoAtual === 2) return (formData.sessaoFases && formData.sessaoFases.length > 0);
+    if (passoAtual === 3) {
+        return true;
+    }
+  };
+
+ const avancarPasso = () => {
+    if (podeAvancar() && passoAtual < 4) { 
+        setPassoAtual(prev => prev + 1);
+    }
+  };
+
+  const voltarPasso = () => {
+    if (passoAtual > 1) {
+        setPassoAtual(prev => prev - 1);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-      <h2 className="text-xl font-bold mb-6 text-gray-800">
-        {sessaoParaAlterar ? 'Alterar Sessão' : 'Nova Sessão'}
-      </h2>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
       
-      {sessaoParaAlterar?.status.toUpperCase() === 'RECUSADA' && (
-        <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-md shadow-sm">
-          <h3 className="text-red-800 font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
-            Alterações Solicitadas pelo Fisioterapeuta
-          </h3>
-          <p className="text-red-700 mt-2 text-sm">
-            <strong>Motivo do Recusamento:</strong> {sessaoParaAlterar.aprovacaoSessao.motivo }
-          </p>
-          <p className="text-red-600 text-xs mt-2 italic">
-            Faça as Alterações Necessárias Abaixo e Clique em Confirmar. A sessão será Enviada Novamente para Aprovação.
-          </p>
-        </div>
-      )}
-
-      <form onSubmit={(e) => { e.preventDefault(); onSalvar(formData as Sessao); }} className="space-y-6">
+      <div className="bg-gray-50 border-b border-gray-200 px-8 py-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          {sessaoParaAlterar ? 'Alterar Sessão' : 'Nova Sessão'}
+        </h2>
         
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Data e Hora</label>
-            <input 
-              type="datetime-local" required 
-              value={formData.data_hora?.toString() || ''} 
-              onChange={e => setFormData({...formData, data_hora: e.target.value})}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" 
-            />
+       <div className="flex items-center justify-center space-x-2 md:space-x-4 text-sm md:text-base">
+  
+          <div className={`flex items-center ${passoAtual >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${passoAtual >= 1 ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'}`}>1</div>
+            <span className="ml-2 font-medium hidden sm:inline">Paciente</span>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Paciente</label>
-            <select 
-              required value={formData.paciente?.id || ''} 
-              onChange={e => {
-                const p = listaPacientes.find(p => p.id === Number(e.target.value));
-                setFormData({ ...formData, paciente: p });
-              }}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none"
-            >
-              <option value="">Selecione um Paciente...</option>
-              {listaPacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
-            </select>
-          </div>
-
-        </div>
-
-        <hr className="border-gray-200" />
-
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Fases da Sessão</h3>
+          <div className={`w-8 md:w-12 h-1 rounded ${passoAtual >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
           
-          <div className="flex gap-2 mb-4 items-end">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700">Exercício / Ambiente Virtual</label>
-              <select 
-                value={exercicioSelecionadoId} 
-                onChange={e => setExercicioSelecionadoId(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none"
-              >
-                <option value="">Escolha um Exercício para Adicionar...</option>
-                {listaExercicios.map(ex => (
-                  <option key={ex.id} value={ex.id}>
-                    {ex.nome} (Package: {ex.codigo_nome})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button 
-              type="button" 
-              onClick={adicionarFase}
-              disabled={!exercicioSelecionadoId}
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-            >
-              + Adicionar
-            </button>
+          <div className={`flex items-center ${passoAtual >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${passoAtual >= 2 ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'}`}>2</div>
+            <span className="ml-2 font-medium hidden sm:inline">Exercícios</span>
           </div>
+          <div className={`w-8 md:w-12 h-1 rounded ${passoAtual >= 3 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
 
-          {formData.sessaoFases && formData.sessaoFases.length > 0 ? (
-            <div className="border border-gray-200 rounded-md overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ordem</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Exercício</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pacote Unity</th>
-                    <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Ação</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {formData.sessaoFases.map((fase, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 text-sm font-bold text-gray-900 text-center w-16">
-                        {fase.ordem}º
-                      </td>
-                      <td className="px-4 py-2 text-sm text-gray-700">
-                        {fase.exercicio.nome}
-                      </td>
-                      <td className="px-4 py-2 text-sm text-gray-500 font-mono text-xs">
-                        {fase.exercicio.codigo_nome}
-                      </td>
-                      <td className="px-4 py-2 text-center w-24">
-                        <button 
-                          type="button" 
-                          onClick={() => removerFase(index)}
-                          className="text-red-600 hover:text-red-900 font-medium text-sm"
-                        >
-                          Remover
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-6 bg-gray-50 border border-dashed border-gray-300 rounded-md">
-              <p className="text-sm text-gray-500">Nenhum Exercício Adicionado a Esta Sessão.</p>
-              <p className="text-xs text-gray-400 mt-1">Selecione um Exercício Acima e Clique em "Adicionar".</p>
+          <div className={`flex items-center ${passoAtual >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${passoAtual >= 3 ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'}`}>3</div>
+            <span className="ml-2 font-medium hidden sm:inline">Observações</span>
+          </div>
+          <div className={`w-8 md:w-12 h-1 rounded ${passoAtual >= 4 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+          
+          <div className={`flex items-center ${passoAtual === 4 ? 'text-blue-600' : 'text-gray-400'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${passoAtual === 4 ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'}`}>4</div>
+            <span className="ml-2 font-medium hidden sm:inline">Agendamento</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-8">
+        {sessaoParaAlterar?.status?.toUpperCase() === 'RECUSADA' && (
+          <div className="mb-6 p-5 bg-red-50 border-l-4 border-red-500 rounded-lg shadow-sm">
+            <h3 className="text-red-800 font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
+              ⚠️ Sessão Recusada - Alterações Solicitadas
+            </h3>
+            <p className="text-red-700 mt-2 text-sm">
+              <strong>Motivo da Recusa:</strong> {sessaoParaAlterar.aprovacaoSessao?.motivo || 'Nenhum Motivo Informado'}
+            </p>
+            <p className="text-red-600 text-xs mt-2 italic">
+              Altere os Dados Necessários nos Passos Abaixo e Clique em Confirmar Para Reenviar a Sessão para Aprovação.
+            </p>
+          </div>
+        )}
+        <form onSubmit={(e) => { e.preventDefault(); onSalvar(formData as Sessao); }}>
+          
+          {passoAtual === 1 && (
+            <div className="animate-fade-in">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Selecione o Paciente</h3>
+              <div className="max-w-xl">
+                <label className="block text-sm font-medium text-gray-700 mb-2"></label>
+                <select 
+                  required 
+                  value={formData.paciente?.id || ''} 
+                  onChange={e => {
+                    const p = listaPacientes.find(p => p.id === Number(e.target.value));
+                    setFormData({ ...formData, paciente: p });
+                  }}
+                  className="w-full rounded-lg border border-gray-300 p-4 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-lg transition-all"
+                >
+                  <option value="">-- Clique Aqui para Selecionar --</option>
+                  {listaPacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+                </select>
+              </div>
             </div>
           )}
-        </div>
 
-        <div className="mt-8 flex justify-end gap-3 border-t border-gray-100 pt-4">
-          <button type="button" onClick={onCancelar}
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-            Voltar
-          </button>
-          <button type="submit"
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
-            Confirmar 
-          </button>
-        </div>
+          {passoAtual === 2 && (
+            <div className="animate-fade-in flex flex-col lg:flex-row gap-8">
+              
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-gray-800 mb-1">Catálogo de Exercícios</h3>
+                <p className="text-sm text-gray-500 mb-4">Clique no Exercício para Adicioná-lo à Sessão.</p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
+                  {listaExercicios.map(ex => (
+                    <div 
+                      key={ex.id} 
+                      onClick={() => adicionarFase(ex.id!)}
+                      className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all group bg-white relative overflow-hidden"
+                    >
+                      <div className="w-full h-24 bg-gray-100 rounded-md mb-3 flex items-center justify-center text-gray-400 text-xs italic group-hover:bg-blue-50 transition-colors">
+                        [ Imagem do Exercício ]
+                      </div>
+                      <h4 className="font-bold text-gray-800 text-lg">{ex.nome}</h4>
+                      <h3 className="text-sm text-gray-500">{ex.tipo_exercicio.nome}</h3>
+                      <p className="text-xs font-mono text-gray-500 mt-1 truncate">{ex.codigo_nome}</p>
+                      <div className="absolute top-2 right-2 bg-blue-100 text-blue-700 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity font-bold">
+                        +
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-      </form>
+              <div className="w-full lg:w-1/3 bg-gray-50 rounded-xl p-5 border border-gray-200 flex flex-col">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 flex justify-between items-center">
+                  Sua Seleção
+                  <span className="bg-blue-600 text-white text-xs py-1 px-2 rounded-full">
+                    {formData.sessaoFases?.length || 0}
+                  </span>
+                </h3>
+                
+                <div className="flex-1 overflow-y-auto max-h-[400px]">
+                  {formData.sessaoFases && formData.sessaoFases.length > 0 ? (
+                    <div className="space-y-3">
+                      {formData.sessaoFases.map((fase, index) => (
+                        <div key={index} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm flex flex-col">
+                          
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              <span className="bg-gray-100 text-gray-600 font-bold w-6 h-6 rounded flex items-center justify-center text-xs shrink-0">
+                                {fase.ordem}
+                              </span>
+                              <span className="font-bold text-gray-800 truncate text-sm">
+                                {fase.exercicio.nome}
+                              </span>
+                            </div>
+                            <button 
+                              type="button" 
+                              onClick={() => removerFase(index)}
+                              className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1 rounded transition-colors"
+                              title="Remover exercício"
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          <div className="flex items-center justify-between bg-gray-50 rounded p-2 border border-gray-100 mt-1">
+                            <span className="text-xs text-gray-500 font-medium">Repetições:</span>
+                            
+                            <div className="flex items-center bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
+                              <button 
+                                type="button" 
+                                onClick={() => alterarRepeticoes(index, -1)}
+                                className="px-3 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 font-bold border-r border-gray-300 transition-colors"
+                              >
+                                -
+                              </button>
+                              
+                              <span className="w-10 text-center font-bold text-blue-700 text-sm">
+                                {fase.repeticao || 1}
+                              </span>
+                              
+                              <button 
+                                type="button" 
+                                onClick={() => alterarRepeticoes(index, 1)}
+                                className="px-3 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 font-bold border-l border-gray-300 transition-colors"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 p-4">
+                      <p>Nenhum Exercício Selecionado.</p>
+                      <p className="text-sm mt-2">Escolha os Exercícios no Catálogo ao Lado.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {passoAtual === 3 && (
+            <div className="animate-fade-in max-w-3xl mx-auto">
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Observações (Opcional)</h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Escreva Abaixo Observações Importantes Para a Sessão.
+              </p>
+              
+              <div className="bg-white rounded-lg">
+                <textarea 
+                  value={(formData as any).observacao || ''} 
+                  onChange={e => setFormData({...formData, observacao: e.target.value})}
+                  placeholder="Digite suas observações aqui..."
+                  rows={6}
+                  className="w-full rounded-lg border border-gray-300 p-4 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none resize-y transition-all text-gray-700"
+                ></textarea>
+                
+                <div className="mt-2 flex justify-end">
+                  <span className="text-xs text-gray-400">
+                    {((formData as any).observacao || '').length} caracteres
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+        
+          {passoAtual === 4 && (
+            <div className="animate-fade-in flex flex-col lg:flex-row gap-8">
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">Defina a Data e Hora</h3>
+                <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 mb-6">
+                  <label className="block text-sm font-bold text-blue-900 mb-2"></label>
+                  <input 
+                    type="datetime-local" required 
+                    value={formData.data_hora?.toString() || ''} 
+                    onChange={e => setFormData({...formData, data_hora: e.target.value})}
+                    className="w-full rounded-lg border border-blue-300 p-4 shadow-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-200 outline-none text-lg transition-all bg-white" 
+                  />
+                </div>
+              </div>
+
+              <div className="w-full lg:w-1/3 bg-gray-50 rounded-xl p-5 border border-gray-200">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Resumo da Sessão</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase font-semibold">Paciente</p>
+                    <p className="font-medium text-gray-900">{formData.paciente?.nome}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase font-semibold">Carga de Exercícios</p>
+                    <p className="font-medium text-gray-900">{formData.sessaoFases?.length} Atividade(s) Selecionada(s)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-10 flex justify-between items-center border-t border-gray-100 pt-6">
+            <div>
+              {passoAtual > 1 ? (
+                <button 
+                  type="button" 
+                  onClick={voltarPasso}
+                  className="rounded-lg border border-gray-300 bg-white px-6 py-3 font-medium text-gray-700 hover:bg-gray-50 transition-all active:scale-95"
+                >
+                  Voltar
+                </button>
+              ) : (
+                <button 
+                  type="button" 
+                  onClick={onCancelar}
+                  className="rounded-lg border border-gray-300 bg-white px-6 py-3 font-medium text-gray-700 hover:bg-gray-50 transition-all active:scale-95"
+                >
+                  Cancelar 
+                </button>
+              )}
+            </div>
+
+            <div>
+              {passoAtual < 4 ? (
+                <button 
+                  type="button" 
+                  onClick={avancarPasso}
+                  disabled={!podeAvancar()}
+                  className="rounded-lg bg-blue-600 px-8 py-3 font-bold text-white hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2"
+                >
+                  Próximo Passo 
+                </button>
+              ) : (
+               <button 
+                  type="button" 
+                  onClick={(e) => {
+                     e.preventDefault(); 
+                     onSalvar(formData as Sessao); 
+                  }}
+                  disabled={!formData.data_hora}
+                  className="rounded-lg bg-green-600 px-8 py-3 font-bold text-white hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2 shadow-lg shadow-green-200"
+                >
+                   Confirmar 
+                </button>
+              )}
+            </div>
+          </div>
+
+        </form>
+      </div>
     </div>
   );
 }

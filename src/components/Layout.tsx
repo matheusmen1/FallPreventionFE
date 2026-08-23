@@ -79,16 +79,19 @@ export function Layout() {
                 Pacientes
               </Link>
               {usuarioLogado?.nivel === 1 && (
-                <Link to="/usuarios" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
-                  Usuários
-                </Link>
+                <div className="flex flex-col gap-1">
+                  <Link to="/usuarios" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+                    Usuários
+                  </Link>
+                  <Link to="/exercicios" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+                    Exercícios
+                  </Link>
+                  <Link to="/tipo-exercicio" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+                    Tipos de Exercício
+                  </Link>
+                </div>
               )}
-              <Link to="/exercicios" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
-                Exercícios
-              </Link>
-              <Link to="/tipo-exercicio" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
-                Tipos de Exercício
-              </Link>
+              
               
             </div>
           </div>

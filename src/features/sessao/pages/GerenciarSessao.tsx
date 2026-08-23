@@ -66,8 +66,15 @@ export function GerenciarSessao()
 
   async function carregarSessoes() {
     try {
-      const dados = await sessaoService.getAll();
-      setSessoes(dados);
+      if (usuarioLogado && usuarioLogado.id != null) {
+        if (usuarioLogado.nivel > 0) {
+          const dados = await sessaoService.getAll();
+          setSessoes(dados);
+        } else {
+          const dados = await sessaoService.getAllByResponsavelId(usuarioLogado.id);
+          setSessoes(dados);
+        }
+      }
     } catch (error) {
       console.error("Erro ao buscar sessões:", error);
     }
@@ -220,7 +227,7 @@ export function GerenciarSessao()
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data / Hora</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsável</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fases</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ambientes Virtuais / Exercícios</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -243,7 +250,7 @@ export function GerenciarSessao()
                     {sessao.responsavel ? sessao.responsavel.nome : 'Não Atribuído'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {sessao.sessaoFases ? `${sessao.sessaoFases.length} ambiente(s)` : '-'}
+                    {sessao.sessaoFases ? `${sessao.sessaoFases.length} Atividade(s) Selecionada(s) ` : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {renderBadgeStatus(sessao.status)}

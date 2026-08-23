@@ -35,12 +35,12 @@ export function AppRoutes()
             <>
               <Route path="usuarios" element={<GerenciarUsuarios />} />
               <Route path="aprovacao-sessoes" element={<AprovacaoSessao/>}></Route>
+              <Route path="exercicios" element={<GerenciarExercicio />} />
+              <Route path="tipo-exercicio" element={<GerenciarTipoExercicio/>}></Route>
             </>
           )}
           <Route path="meus-dados" element={<MeusDados />} />
-          <Route path="pacientes" element={<GerenciarPaciente />} />
-          <Route path="exercicios" element={<GerenciarExercicio />} />
-          <Route path="tipo-exercicio" element={<GerenciarTipoExercicio/>}></Route>
+          <Route path="pacientes" element={<GerenciarPaciente />} />    
           <Route path="sessoes" element={<GerenciarSessao/>}></Route>
           <Route path="atendimento" element={<Atendimento/>}></Route>
           <Route path="sessao/execucao/:id" element={<ExecucaoSessao/>}></Route>
