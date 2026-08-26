@@ -206,7 +206,7 @@ export function ExecucaoSessao() {
     <div className="flex h-[85vh] w-full bg-slate-900 font-sans overflow-hidden">
       
 
-      <div className="w-[25%] bg-white h-full flex flex-col shadow-2xl z-10">
+      <div className="w-[27.5%] bg-white h-full flex flex-col shadow-2xl z-10">
         
         <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
           <div>
@@ -239,7 +239,9 @@ export function ExecucaoSessao() {
                     <div className="flex justify-between items-center">
                       <span className={`font-bold ${isAtiva ? 'text-blue-700' : isPassada ? 'text-green-700' : 'text-gray-600'}`}>
                         {fase.ordem}º - {fase.exercicio.nome} - Repetições: {fase.repeticao}
+                        
                       </span>
+                      
                       {isAtiva && (
                         <span className="flex h-3 w-3 relative">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -248,6 +250,8 @@ export function ExecucaoSessao() {
                       )}
                       {isPassada && <span>✅</span>}
                     </div>
+                    
+                    <p className="text-xs text-gray-500 mt-1 font-mono">{fase.exercicio.tipo_exercicio.nome}</p>
                     <p className="text-xs text-gray-500 mt-1 font-mono">{fase.exercicio.codigo_nome}</p>
                   </div>
                 );

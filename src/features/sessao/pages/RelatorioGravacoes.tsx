@@ -195,7 +195,7 @@ export function RelatorioGravacoes() {
             ) : gravacoes.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                  Nenhuma Gravação Encontrada para esta sessão.
+                  Nenhuma Gravação Encontrada Para Esta Sessão.
                 </td>
               </tr>
             ) : (

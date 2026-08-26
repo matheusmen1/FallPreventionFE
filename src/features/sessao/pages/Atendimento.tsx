@@ -92,11 +92,13 @@ export function Atendimento()
                     <li key={fase.ordem} className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100 shadow-sm flex items-center gap-2">
                       <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.ordem}º</span>
                       {fase.exercicio.nome}
+                      <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.exercicio.tipo_exercicio.nome}</span>
                       <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">Repetições: {fase.repeticao}</span>
                     </li>
+                    
                   ))}
               </ul>
-
+                    
             </div>
              <div className="p-6 flex-1">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Observações</h4>

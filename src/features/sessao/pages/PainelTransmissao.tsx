@@ -10,7 +10,7 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
   const videoRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const [status, setStatus] = useState("Aguardando conexão do Meta Quest 3S...");
+  const [status, setStatus] = useState("Aguardando Conexão do Meta Quest 3S...");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -25,20 +25,29 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
   useEffect(() =>
   {
    
-    wsRef.current = new WebSocket("ws://192.168.15.12:8080/ws/webrtc"); 
+    wsRef.current = new WebSocket("ws://192.168.15.13:8080/ws/webrtc"); 
 
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
     });
     pcRef.current = pc;
-
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
+        setStatus("Aguardando Conexão do Meta Quest 3S...");
+        if (videoRef.current != null) {
+          videoRef.current.srcObject = null;
+        }
+      }
+    };
     pc.ontrack = (event) =>
     {
-      setStatus("Transmissão Ativa 🟢");
       
-      if (videoRef.current && event.streams[0]) {
+        setStatus("Transmissão Ativa 🟢");
+    if (videoRef.current && event.streams[0])
+     {
         videoRef.current.srcObject = event.streams[0];
       }
+    
     };
 
     pc.onicecandidate = (event) => {
@@ -50,6 +59,7 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
           sdpMLineIndex: event.candidate.sdpMLineIndex
         }));
       }
+     
     };
 
     wsRef.current.onmessage = async (event) => {
