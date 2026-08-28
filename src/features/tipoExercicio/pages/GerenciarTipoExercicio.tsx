@@ -78,7 +78,7 @@ export function GerenciarTipoExercicio()
     }
 
     try {
-      if (tipoExercicio.id != null && confirm(`Tem Certeza que Deseja Excluir o Tipo de Exercício ${tipoExercicio.nome}?`))
+      if (tipoExercicio.id != null && confirm(`Tem Certeza que Deseja Excluir o Tipo de Intervenção Clínica ${tipoExercicio.nome}?`))
       {
         await tipoExercicioService.delete(tipoExercicio.id);
         carregandoTipoExercicio(); 
@@ -106,15 +106,15 @@ export function GerenciarTipoExercicio()
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Gerenciar Tipo de Exercício</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Gerenciar Tipo de Intervenção Clínica</h1>
         <button onClick={onNovoTipoExercicio} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow transition-colors font-medium">
-          + Novo Tipo Exercício
+          + Novo Tipo Intervenção Clínica
         </button>
       </div>
         <div className="mb-4">
         <input
           type="text"
-          placeholder="Buscar Tipo de Exercício por Nome..."
+          placeholder="Buscar Tipo de Intervenção Clínica por Nome..."
           onChange={(e) => {if (e.target.value) {carregarTipoExercicioNome(e.target.value)} else {carregandoTipoExercicio()} }}
           className="w-full sm:w-1/3 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />

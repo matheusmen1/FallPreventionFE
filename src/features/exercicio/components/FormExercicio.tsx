@@ -26,7 +26,7 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
   return (
     <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
       <h2 className="text-xl font-bold mb-6 text-gray-800">
-        {exercicioParaAlterar ? 'Alterar Exercício' : 'Novo Exercício'}
+        {exercicioParaAlterar ? 'Alterar Intervenção Clínica' : 'Nova Intervenção Clínica'}
       </h2>
 
       <form onSubmit={(e) => { e.preventDefault(); onSalvar(formData); }} className="space-y-4">
@@ -37,17 +37,17 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Descricao</label>
+            <label className="block text-sm font-medium text-gray-700">Descrição</label>
             <input type="text" required value={formData.descricao} onChange={e => setFormData({...formData, descricao: e.target.value})}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Código Unity</label>
+            <label className="block text-sm font-medium text-gray-700">Pacote Unity</label>
             <input type="text" required value={formData.codigo_nome} onChange={e => setFormData({...formData, codigo_nome: e.target.value})}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
           </div>
           <div>
-              <label className="block text-sm font-medium text-gray-700">Tipo Exercício</label>
+              <label className="block text-sm font-medium text-gray-700">Tipo de Intervenção Clínica</label>
               <select 
                 required 
                 value={formData.tipo_exercicio?.id || ''} 
@@ -61,7 +61,7 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
                 }}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none bg-blue-50"
               >
-                <option value="">Selecione um Tipo de Exercício...</option>
+                <option value="">Selecione um Tipo de Intervenção Clínica...</option>
                 {listaTipoExercicio.map(tipo => (
                   <option key={tipo.id} value={tipo.id}>
                     {tipo.nome}

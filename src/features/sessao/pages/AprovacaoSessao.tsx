@@ -99,7 +99,7 @@ export function AprovacaoSessao()
               </div>
               
               <div className="p-6 flex-1">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Atividade(s) Selecionada(s)</h4>
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Intervenção(s) Clínica(s)</h4>
                 <ul className="space-y-2">
                   {sessao.sessaoFases
                   .slice()
@@ -110,7 +110,11 @@ export function AprovacaoSessao()
                       {fase.exercicio.nome}
                       
                       <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.exercicio.tipo_exercicio.nome}</span>
-                      <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">Repetições: {fase.repeticao}</span>
+                      {fase.is_repeticao ? (
+                        <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">Repetições: {fase.repeticao}</span>
+                      ) : (
+                        <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">Tempo: {fase.tempo}s</span>
+                      )}
                     </li>
                   ))}
                 </ul>

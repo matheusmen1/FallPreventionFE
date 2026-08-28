@@ -92,7 +92,7 @@ export function GerenciarExercicio()
     }
 
     try {
-      if (exercicio.id != null && confirm(`Tem Certeza que Deseja Excluir o Exercício ${exercicio.nome}?`))
+      if (exercicio.id != null && confirm(`Tem Certeza que Deseja Excluir a Intervenção Clínica ${exercicio.nome}?`))
       {
         await exercicioService.delete(exercicio.id);
         carregandoExercicio(); 
@@ -121,15 +121,15 @@ export function GerenciarExercicio()
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Gerenciar Exercício</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Gerenciar Intervenções Clínicas</h1>
         <button onClick={onNovoExercicio} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow transition-colors font-medium">
-          + Novo Exercício
+          + Nova Intervenção Clínica
         </button>
       </div>
         <div className="mb-4">
         <input
           type="text"
-          placeholder="Buscar Exercício por Nome..."
+          placeholder="Buscar Intervenção Clínica por Nome..."
           onChange={(e) => {if (e.target.value) {carregarExercicioNome(e.target.value)} else {carregandoExercicio()} }}
           className="w-full sm:w-1/3 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
@@ -140,8 +140,8 @@ export function GerenciarExercicio()
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Exercício</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código Unity</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Intervenção Clínica</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pacote Unity</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
@@ -149,7 +149,7 @@ export function GerenciarExercicio()
             {carregando ? (
               <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Carregando Dados...</td></tr>
             ) :exercicios.length === 0 ? (
-              <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Nenhum Exercício Encontrado.</td></tr>
+              <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Nenhuma Intervenção Clínica Encontrada.</td></tr>
             ) : (
               exercicios.map((exercicio) => (
                 <tr key={exercicio.id} className="hover:bg-gray-50 transition-colors">

@@ -84,10 +84,10 @@ export function Layout() {
                     Usuários
                   </Link>
                   <Link to="/exercicios" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
-                    Exercícios
+                    Intervenções Clínicas
                   </Link>
-                  <Link to="/tipo-exercicio" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
-                    Tipos de Exercício
+                  <Link to="/tipo-intervencao-clinica" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+                    Tipos de Intervenções
                   </Link>
                 </div>
               )}

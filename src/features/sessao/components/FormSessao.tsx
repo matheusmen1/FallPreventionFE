@@ -58,7 +58,9 @@ export function FormSessao({
     const novaFase: SessaoFase = {
       exercicio: exercicioCompleto,
       ordem: fasesAtuais.length + 1,
-      repeticao: 1 
+      repeticao: 5,
+      tempo: 30,
+      is_repeticao: true
     };
 
     setFormData({
@@ -78,20 +80,33 @@ export function FormSessao({
 
     setFormData({ ...formData, sessaoFases: fasesAtuais });
   }
-
-  function alterarRepeticoes(index: number, alteracao: number) 
+  function alterarModo(index: number, isRepeticao: boolean)
   {
-    const fasesAtuais = [...(formData.sessaoFases || [])];
-    
-    const qtdAtual = fasesAtuais[index].repeticao || 1;
-    
-    const novaQtd = Math.max(1, qtdAtual + alteracao);
-    
-    fasesAtuais[index].repeticao = novaQtd;
-    
-    setFormData({ ...formData, sessaoFases: fasesAtuais });
+  const fasesAtuais = [...(formData.sessaoFases || [])];
+  
+  fasesAtuais[index].is_repeticao = isRepeticao;
+  
+  setFormData({ ...formData, sessaoFases: fasesAtuais });
+ }
+function alterarValor(index: number, alteracao: number) 
+{
+  const fasesAtuais = [...(formData.sessaoFases || [])];
+  
+  const faseAtual = fasesAtuais[index];
+  
+  if (!faseAtual.is_repeticao) 
+  {
+    const tempoAtual = faseAtual.tempo || 30;
+    faseAtual.tempo = Math.max(10, tempoAtual + alteracao);
+  } 
+  else
+  {
+    const qtdAtual = faseAtual.repeticao || 5;
+    faseAtual.repeticao = Math.max(1, qtdAtual + alteracao);
   }
-
+  
+  setFormData({ ...formData, sessaoFases: fasesAtuais });
+}
   const podeAvancar = () => {
     if (passoAtual === 1) return !!formData.paciente;
     if (passoAtual === 2) return (formData.sessaoFases && formData.sessaoFases.length > 0);
@@ -130,7 +145,7 @@ export function FormSessao({
           
           <div className={`flex items-center ${passoAtual >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${passoAtual >= 2 ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'}`}>2</div>
-            <span className="ml-2 font-medium hidden sm:inline">Exercícios</span>
+            <span className="ml-2 font-medium hidden sm:inline">Intervenção Clínica</span>
           </div>
           <div className={`w-8 md:w-12 h-1 rounded ${passoAtual >= 3 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
 
@@ -188,8 +203,8 @@ export function FormSessao({
             <div className="animate-fade-in flex flex-col lg:flex-row gap-8">
               
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-800 mb-1">Catálogo de Exercícios</h3>
-                <p className="text-sm text-gray-500 mb-4">Clique no Exercício para Adicioná-lo à Sessão.</p>
+                <h3 className="text-xl font-semibold text-gray-800 mb-1">Catálogo de Intervenções Clínicas</h3>
+                <p className="text-sm text-gray-500 mb-4">Clique na Intervenção Clínica para Adicioná-la à Sessão.</p>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
                   {listaExercicios.map(ex => (
@@ -245,39 +260,99 @@ export function FormSessao({
                             </button>
                           </div>
 
-                          <div className="flex items-center justify-between bg-gray-50 rounded p-2 border border-gray-100 mt-1">
-                            <span className="text-xs text-gray-500 font-medium">Repetições:</span>
-                            
-                            <div className="flex items-center bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
-                              <button 
-                                type="button" 
-                                onClick={() => alterarRepeticoes(index, -1)}
-                                className="px-3 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 font-bold border-r border-gray-300 transition-colors"
-                              >
-                                -
-                              </button>
-                              
-                              <span className="w-10 text-center font-bold text-blue-700 text-sm">
-                                {fase.repeticao || 1}
+                          <div className="flex flex-col gap-3 bg-gray-50 rounded-lg p-3 border border-gray-200 mt-1 shadow-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                                Modo de Intervenção Clínica:
+                              </span>
+                              <div className="flex bg-gray-200 p-1 rounded-md">
+                                <button
+                                  type="button"
+                                  onClick={() => alterarModo(index, true)}
+                                  className={`px-3 py-1 text-xs font-bold rounded transition-all ${
+                                    fase.is_repeticao 
+                                      ? 'bg-white text-blue-700 shadow' 
+                                      : 'text-gray-500 hover:text-gray-700'
+                                  }`}
+                                >
+                                  Repetições
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => alterarModo(index, false)} 
+                                  className={`px-3 py-1 text-xs font-bold rounded transition-all ${
+                                    !fase.is_repeticao 
+                                      ? 'bg-white text-blue-700 shadow' 
+                                      : 'text-gray-500 hover:text-gray-700'
+                                  }`}
+                                >
+                                  Tempo
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between bg-white border border-gray-200 rounded-md p-2">
+                              <span className="text-sm text-gray-700 font-semibold">
+                                {!fase.is_repeticao ? 'Tempo:' : 'Quantidade:'}
                               </span>
                               
-                              <button 
-                                type="button" 
-                                onClick={() => alterarRepeticoes(index, 1)}
-                                className="px-3 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 font-bold border-l border-gray-300 transition-colors"
-                              >
-                                +
-                              </button>
+                              <div className="flex items-center gap-2">
+                                {!fase.is_repeticao && (
+                                  <div className="flex gap-1 mr-2 hidden sm:flex">
+                                    <button 
+                                      type="button" 
+                                      onClick={() => alterarValor(index, 30)}
+                                      className="text-[10px] px-2 py-1 bg-blue-50 text-blue-600 rounded border border-blue-200 hover:bg-blue-100 font-bold"
+                                    >
+                                      +30s
+                                    </button>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => alterarValor(index, 60)}
+                                      className="text-[10px] px-2 py-1 bg-blue-50 text-blue-600 rounded border border-blue-200 hover:bg-blue-100 font-bold"
+                                    >
+                                      +60s
+                                    </button>
+                                  </div>
+                                )}
+
+                                <div className="flex items-center bg-gray-50 border border-gray-300 rounded shadow-sm overflow-hidden">
+                                  <button 
+                                    type="button" 
+                                    onClick={() => alterarValor(index, !fase.is_repeticao ? -10 : -1)}
+                                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold border-r border-gray-300 transition-colors"
+                                  >
+                                    -
+                                  </button>
+                                  
+                                  <span className="w-12 text-center font-bold text-blue-700 text-sm">
+                                    {!fase.is_repeticao 
+                                      ? (fase.tempo || 30) 
+                                      : (fase.repeticao || 5) 
+                                    }
+                                    <span className="text-[10px] text-gray-400 ml-1">
+                                      {!fase.is_repeticao ? 's' : ''}
+                                    </span>
+                                  </span>
+                                  
+                                  <button 
+                                    type="button" 
+                                    onClick={() => alterarValor(index, !fase.is_repeticao ? 10 : 1)}
+                                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold border-l border-gray-300 transition-colors"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           </div>
-
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 p-4">
-                      <p>Nenhum Exercício Selecionado.</p>
-                      <p className="text-sm mt-2">Escolha os Exercícios no Catálogo ao Lado.</p>
+                      <p>Nenhuma Intervenção Clínica Selecionada.</p>
+                      <p className="text-sm mt-2">Escolha as Intervenções Clínicas no Catálogo ao Lado.</p>
                     </div>
                   )}
                 </div>
@@ -336,8 +411,8 @@ export function FormSessao({
                   </div>
                   
                   <div>
-                    <p className="text-xs text-gray-500 uppercase font-semibold">Carga de Exercícios</p>
-                    <p className="font-medium text-gray-900">{formData.sessaoFases?.length} Atividade(s) Selecionada(s)</p>
+                    <p className="text-xs text-gray-500 uppercase font-semibold">Carga de Intervenções Clínicas</p>
+                    <p className="font-medium text-gray-900">{formData.sessaoFases?.length} Intervenção(s) Clínicas(s)</p>
                   </div>
                 </div>
               </div>

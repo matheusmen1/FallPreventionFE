@@ -22,7 +22,7 @@ export function FormTipoExercicio({ onCancelar, onSalvar, tipoExercicioParaAlter
   return (
     <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
       <h2 className="text-xl font-bold mb-6 text-gray-800">
-        {tipoExercicioParaAlterar ? 'Alterar Tipo de Exercício' : 'Novo Tipo de Exercício'}
+        {tipoExercicioParaAlterar ? 'Alterar Tipo de Intervenção Clínica' : 'Novo Tipo de Intervenção Clínica'}
       </h2>
 
       <form onSubmit={(e) => { e.preventDefault(); onSalvar(formData); }} className="space-y-4">

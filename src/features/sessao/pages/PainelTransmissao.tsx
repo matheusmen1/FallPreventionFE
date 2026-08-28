@@ -25,7 +25,7 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
   useEffect(() =>
   {
    
-    wsRef.current = new WebSocket("ws://192.168.15.13:8080/ws/webrtc"); 
+    wsRef.current = new WebSocket("ws://192.168.15.10:8080/ws/webrtc"); 
 
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }]

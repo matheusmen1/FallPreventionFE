@@ -227,7 +227,7 @@ export function GerenciarSessao()
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data / Hora</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsável</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ambientes Virtuais / Exercícios</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intervenções Clínicas</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -250,7 +250,7 @@ export function GerenciarSessao()
                     {sessao.responsavel ? sessao.responsavel.nome : 'Não Atribuído'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {sessao.sessaoFases ? `${sessao.sessaoFases.length} Atividade(s) Selecionada(s) ` : '-'}
+                    {sessao.sessaoFases ? `${sessao.sessaoFases.length} Intervenção(s) Clínica(s) ` : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {renderBadgeStatus(sessao.status)}

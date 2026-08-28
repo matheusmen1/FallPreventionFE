@@ -30,13 +30,13 @@ export function AppRoutes()
   return (
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/sessoes" replace />} />
+          <Route index element={<Navigate to="/atendimento" replace />} />
           {usuarioLogado.nivel === 1 && (
             <>
               <Route path="usuarios" element={<GerenciarUsuarios />} />
               <Route path="aprovacao-sessoes" element={<AprovacaoSessao/>}></Route>
               <Route path="exercicios" element={<GerenciarExercicio />} />
-              <Route path="tipo-exercicio" element={<GerenciarTipoExercicio/>}></Route>
+              <Route path="tipo-intervencao-clinica" element={<GerenciarTipoExercicio/>}></Route>
             </>
           )}
           <Route path="meus-dados" element={<MeusDados />} />

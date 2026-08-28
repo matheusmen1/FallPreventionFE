@@ -221,7 +221,7 @@ export function ExecucaoSessao() {
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Atividade(s) Selecionada(s)</h3>
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Intervenção(s) Clínica(s)</h3>
           <div className="space-y-3">
             {(() => {
               const faseAtual = Number((sessao as any)?.ordemAtual) || 0;
@@ -236,11 +236,15 @@ export function ExecucaoSessao() {
                     isAtiva ? 'border-blue-500 bg-blue-50 shadow-md' : 
                     isPassada ? 'border-green-200 bg-green-50 opacity-60' : 'border-gray-100 bg-white'
                   }`}>
-                    <div className="flex justify-between items-center">
-                      <span className={`font-bold ${isAtiva ? 'text-blue-700' : isPassada ? 'text-green-700' : 'text-gray-600'}`}>
+                    
+                   {fase.is_repeticao ? <span className={`font-bold ${isAtiva ? 'text-blue-700' : isPassada ? 'text-green-700' : 'text-gray-600'}`}>
                         {fase.ordem}º - {fase.exercicio.nome} - Repetições: {fase.repeticao}
                         
-                      </span>
+                      </span> : <span className={`font-bold ${isAtiva ? 'text-blue-700' : isPassada ? 'text-green-700' : 'text-gray-600'}`}>
+                        {fase.ordem}º - {fase.exercicio.nome} - Tempo: {fase.tempo}s
+                        
+                      </span>}
+                  <div className="flex justify-between items-center">
                       
                       {isAtiva && (
                         <span className="flex h-3 w-3 relative">
@@ -295,7 +299,7 @@ export function ExecucaoSessao() {
             onClick={onProximaFase}
             disabled={sessao?.status === 'APROVADA'}
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-             Próxima Fase
+             Próxima Intervenção
           </button>
 
             <button 
@@ -311,7 +315,7 @@ export function ExecucaoSessao() {
             disabled={sessao?.status !== 'EM_ANDAMENTO' && sessao?.status !== 'PAUSADA'}
             className="py-3 border-2 font-bold rounded-lg transition-all bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95 disabled:bg-slate-200 disabled:border-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {sessao?.status === 'PAUSADA' ? 'Retomar Fase' : 'Pausar Fase'}
+            {sessao?.status === 'PAUSADA' ? 'Retomar Intervenção' : 'Pausar Intervenção'}
           </button>
 
           <button 
