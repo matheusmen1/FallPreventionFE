@@ -128,6 +128,14 @@ export function AprovacaoSessao()
                   <p className="text-sm text-gray-500">Nenhuma Observação Encontrada.</p>
                 )}
               </div>
+              <div className="p-6 flex-1">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Solicitações de Alteração</h4>
+                {sessao.aprovacaoSessao != null && sessao.aprovacaoSessao.motivo ? (
+                  <p className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100 shadow-sm whitespace-pre-wrap">{sessao.aprovacaoSessao.motivo}</p>
+                ) : (
+                  <p className="text-sm text-gray-500">Nenhuma Solicitação de Alteração Encontrada.</p>
+                )}
+              </div>
               <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex gap-3">
                 <button 
                   onClick={() => onAprovarSessaoPendente(sessao.id!)}
@@ -137,9 +145,9 @@ export function AprovacaoSessao()
                 </button>
                 <button 
                   onClick={() => abrirModalRecusa(sessao.id!)}
-                  className="flex-1 bg-white border border-red-500 text-red-600 hover:bg-red-50 font-medium py-2 rounded-md shadow-sm transition-colors active:scale-95"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md shadow-sm transition-colors active:scale-95"
                 >
-                  Recusar
+                  Solicitar Alteração
                 </button>
               </div>
             </div>
@@ -149,13 +157,13 @@ export function AprovacaoSessao()
       {modalRecusaAberto && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-opacity">
           <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 animate-fade-in-up">
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Motivo do Recusamento</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Motivo da Solicitação de Alteração</h3>
             <p className="text-sm text-gray-500 mb-5">
-              Descreva o Motivo do Recusamento. O Monitor Receberá este Aviso para Ajustar a Sessão.
+              Descreva o Motivo da Solicitação de Alteração. O Monitor Receberá este Aviso para Ajustar a Sessão.
             </p>
             <textarea 
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 mb-5 h-32 resize-none text-sm text-gray-700"
-              placeholder="Digite aqui o motivo de recusa..."
+              placeholder="Digite aqui o motivo..."
               value={motivoRecusa}
               onChange={e => setMotivoRecusa(e.target.value)}
             ></textarea>

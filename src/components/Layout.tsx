@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AutoContext';
 import { useSessao } from '../contexts/SessaoContext';
-
 interface LayoutProps {
   menuAberto: boolean;
 }
@@ -39,6 +38,7 @@ export function Layout({ menuAberto }: LayoutProps) {
       >
         <div className="w-64 flex flex-col h-full">
           <div className="h-16 flex items-center px-6 text-xl font-bold border-b border-slate-800 shrink-0">
+          
             Fall Prevention VR
           </div>
           
@@ -48,7 +48,8 @@ export function Layout({ menuAberto }: LayoutProps) {
                 Sessões
               </h3>
               <Link to="/atendimento" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors flex items-center gap-2 font-medium text-emerald-400">
-                Sessões Disponíveis
+                
+                Sessões Disponíveis 
                 {qtdeAprovadas > 0 && (
                   <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">
                     {qtdeAprovadas}
@@ -57,7 +58,8 @@ export function Layout({ menuAberto }: LayoutProps) {
               </Link>
               {usuarioLogado?.nivel === 1 && (
                 <Link to="/aprovacao-sessoes" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors flex justify-between items-center">
-                  <span>Sessões Pendentes</span>
+                   
+                   Sessões Pendentes
                   {qtdPendentes > 0 && (
                     <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                       {qtdPendentes}
@@ -83,6 +85,7 @@ export function Layout({ menuAberto }: LayoutProps) {
               </h3>
               <div className="flex flex-col gap-1">
                 <Link to="/pacientes" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+                  
                   Pacientes
                 </Link>
                 {usuarioLogado?.nivel === 1 && (

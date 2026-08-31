@@ -164,13 +164,13 @@ export function GerenciarSessao()
     const statusNormalizado = status?.toUpperCase() || '';
     switch (statusNormalizado) {
       case 'APROVADA':
-        return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Aprovada</span>;
+        return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aprovada</span>;
       case 'PENDENTE':
         return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Pendente</span>;
       case 'CONCLUIDA':
         return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Concluída</span>;
       case 'RECUSADA':
-        return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Recusada</span>;
+        return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Alterações Solicitadas</span>;
       case 'EM_ANDAMENTO':
         return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Em Andamento</span>;
       case 'PAUSADA':

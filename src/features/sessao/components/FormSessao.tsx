@@ -164,12 +164,12 @@ function alterarValor(index: number, alteracao: number)
 
       <div className="p-8">
         {sessaoParaAlterar?.status?.toUpperCase() === 'RECUSADA' && (
-          <div className="mb-6 p-5 bg-red-50 border-l-4 border-red-500 rounded-lg shadow-sm">
+          <div className="mb-6 p-5 bg-red-50 border-l-4 border-red-500 rounded-lg shadow-sm whitespace-pre-wrap">
             <h3 className="text-red-800 font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
-              ⚠️ Sessão Recusada - Alterações Solicitadas
+              ⚠️ Alterações Solicitadas Por {sessaoParaAlterar.responsavel.responsavel?.nome}
             </h3>
             <p className="text-red-700 mt-2 text-sm">
-              <strong>Motivo da Recusa:</strong> {sessaoParaAlterar.aprovacaoSessao?.motivo || 'Nenhum Motivo Informado'}
+              <strong>Motivo:</strong> {sessaoParaAlterar.aprovacaoSessao?.motivo || 'Nenhum Motivo Informado'}
             </p>
             <p className="text-red-600 text-xs mt-2 italic">
               Altere os Dados Necessários nos Passos Abaixo e Clique em Confirmar Para Reenviar a Sessão para Aprovação.
