@@ -14,9 +14,11 @@ import { ExecucaoSessao } from '../features/sessao/pages/ExecucaoSessao';
 import { RelatorioObservacoes } from '../features/sessao/pages/RelatorioObservacoes';
 import { MeusDados } from '../features/usuario/components/MeusDados';
 import { RelatorioGravacoes } from '../features/sessao/pages/RelatorioGravacoes';
+import { useState } from 'react';
 export function AppRoutes()
 {
   const { usuarioLogado } = useAuth();
+  const [menuAberto, setMenuAberto] = useState(true); 
   if (!usuarioLogado) 
   {
     return (
@@ -29,7 +31,7 @@ export function AppRoutes()
 
   return (
       <Routes>
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={<Layout menuAberto={menuAberto} />}>
           <Route index element={<Navigate to="/atendimento" replace />} />
           {usuarioLogado.nivel === 1 && (
             <>
@@ -43,7 +45,7 @@ export function AppRoutes()
           <Route path="pacientes" element={<GerenciarPaciente />} />    
           <Route path="sessoes" element={<GerenciarSessao/>}></Route>
           <Route path="atendimento" element={<Atendimento/>}></Route>
-          <Route path="sessao/execucao/:id" element={<ExecucaoSessao/>}></Route>
+          <Route path="sessao/execucao/:id" element={<ExecucaoSessao setMenuAberto={setMenuAberto} />} /> 
           <Route path="relatorio/gravacoes" element={<RelatorioGravacoes/>}></Route>
           <Route path="relatorio/observacao" element={<RelatorioObservacoes/>}></Route>
           <Route path="*" element={<Navigate to="/" replace />} />

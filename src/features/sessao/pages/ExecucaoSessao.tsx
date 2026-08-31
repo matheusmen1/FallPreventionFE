@@ -6,10 +6,14 @@ import { PainelTransmissao } from './PainelTransmissao';
 import { useNavigate } from 'react-router-dom';
 import type { SessaoObservacao } from '../types/sessaoObservacao';
 import { useSessao } from '../../../contexts/SessaoContext';
-export function ExecucaoSessao() {
+
+interface ExecucaoSessaoProps {
+  setMenuAberto: (menuAberto: boolean) => void;
+}
+
+export function ExecucaoSessao({setMenuAberto}: ExecucaoSessaoProps) {
   const { id } = useParams();
-  const [sessao, setSessao] = useState<Sessao>()
-  const [cont, setCont] = useState(0);
+  const [sessao, setSessao] = useState<Sessao>();
   const navigate = useNavigate();
   const { carregarSessoesAprovadas } = useSessao();
   const [isModalAberto, setIsModalAberto] = useState(false);
@@ -19,11 +23,42 @@ export function ExecucaoSessao() {
   const [observacao, setObservacao] = useState("");
   const [isSalvandoObservacao, setIsSalvandoObservacao] = useState(false);
   const [isGravando, setIsGravando] = useState(false);
+  const [flag, setFlag] = useState(false);
   useEffect(() => {
     carregarSessao();
-
+    setMenuAberto(false);
+    return () => {
+      setMenuAberto(true);
+    }
   }, []);
+  useEffect(() => {
+        const ws = new WebSocket("ws://192.168.15.9:8080/ws/react");
 
+        ws.onopen = () => {
+            console.log("React conectado ao servidor Java!");
+        };
+
+        ws.onmessage = (event) =>
+        {
+            const pacote = JSON.parse(event.data);
+            if (pacote.acao === "PROXIMA_FASE_REACT")
+            {
+              setFlag(false); 
+              carregarSessao();
+            }
+            else
+            if (pacote.acao === "HABILITAR_BOTAO_REINICIAR_INTERVENCAO")
+            {
+              setFlag(true);
+            }
+            
+            
+        };
+
+        ws.onclose = () => console.log("Conexão WebSocket fechada.");
+
+        return () => ws.close();
+    }, []);
   async function carregarSessao() 
   {
     try {
@@ -65,18 +100,18 @@ export function ExecucaoSessao() {
   }
   async function onProximaFase() {
     try{
-        if (id != null && cont < sessao?.sessaoFases.length!)
+        if (id != null && sessao != null)
         {
-          if (cont < sessao?.sessaoFases.length! - 1)  
+          if (sessao?.ordemAtual! < sessao?.sessaoFases.length!)  
           {
             await sessaoService.proximaFase(Number.parseInt(id));
-            setCont(cont + 1);
+            setFlag(false);
             carregarSessao();
           }
           else
           {
             
-            alert("Todas as Atividades Foram Concluídas.");
+            alert("Todas as Intervenções Clínicas Foram Concluídas.");
           }
         }
     }catch(error){
@@ -106,7 +141,6 @@ export function ExecucaoSessao() {
     try{
       if (sessao != null && sessao.id != null)
       {
-        setCont(0);
         setIsGravando(false);
         //await sessaoService.retomar(sessao.id);
         await sessaoService.reiniciarSessao(sessao.id);
@@ -134,7 +168,6 @@ export function ExecucaoSessao() {
     {
       if (sessao != null && sessao.id != null)
       {
-      
        await sessaoService.sairSala(sessao.id);
        carregarSessoesAprovadas();
        navigate(`/atendimento`);
@@ -154,7 +187,7 @@ export function ExecucaoSessao() {
         const sessaoObservacao: SessaoObservacao = {
           
           observacao: observacao,
-          sessaoFase: sessao.sessaoFases[cont]
+          sessaoFase: sessao.sessaoFases[sessao.ordemAtual! - 1]
         };
         await sessaoService.addObservacao(sessaoObservacao, sessao.id);
         setObservacao("");
@@ -202,8 +235,10 @@ export function ExecucaoSessao() {
   }
     return idade;
   }
+  
   return (
-    <div className="flex h-[85vh] w-full bg-slate-900 font-sans overflow-hidden">
+
+      <div className="flex h-[85vh] w-full bg-slate-900 font-sans overflow-hidden">
       
 
       <div className="w-[27.5%] bg-white h-full flex flex-col shadow-2xl z-10">
@@ -216,6 +251,7 @@ export function ExecucaoSessao() {
           
           </div>
           <button onClick={onSairSala} className="text-red-500 text-sm font-bold hover:underline">
+            
             Sair da Sala
           </button>
         </div>
@@ -253,7 +289,7 @@ export function ExecucaoSessao() {
                         </span>
                       )}
                       {isPassada && <span>✅</span>}
-                    </div>
+                  </div>
                     
                     <p className="text-xs text-gray-500 mt-1 font-mono">{fase.exercicio.tipo_exercicio.nome}</p>
                     <p className="text-xs text-gray-500 mt-1 font-mono">{fase.exercicio.codigo_nome}</p>
@@ -280,9 +316,9 @@ export function ExecucaoSessao() {
           </button>
           <button 
             onClick={onReiniciarExercicio}
-            disabled={sessao?.status === 'APROVADA'}
+            disabled={!flag}
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-             Reiniciar Exercício
+             Reiniciar Intervenção
           </button>
           <button 
             onClick={onReiniciarSessao}
@@ -343,9 +379,9 @@ export function ExecucaoSessao() {
       </div>
             
     
-      <div className="w-[75%] h-full flex flex-col items-center justify-center relative p-8">
+      <div className="w-[75%] h-full flex flex-col items-center justify-center relative p-10">
         <PainelTransmissao isGravacao={isGravando} sessaoId={sessao?.id || 0} />
-        <div className="absolute bottom-8 right-8 flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
+        <div className="absolute bottom-2 right-24 flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
           <span className="flex h-3 w-3 relative">
              {sessao?.status === 'EM_ANDAMENTO' && (
               <>
@@ -479,6 +515,6 @@ export function ExecucaoSessao() {
         </div>
       )}
     </div>
-    
+   
   );
 }
