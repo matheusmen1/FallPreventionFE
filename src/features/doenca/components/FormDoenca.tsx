@@ -9,7 +9,9 @@ interface FormProps
 
 export function FormDoenca({ onCancelar, onSalvar, doencaParaAlterar }: FormProps) {
   const [formData, setFormData] = useState<Doenca>({
-    nome: ''
+    nome: '',
+    descricao: ''
+    
   });
 
   useEffect(() => {
@@ -26,11 +28,16 @@ export function FormDoenca({ onCancelar, onSalvar, doencaParaAlterar }: FormProp
 
       <form onSubmit={(e) => { e.preventDefault(); onSalvar(formData); }} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Nome</label>
-            <input type="text" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
-          </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Nome</label>
+                <input type="text" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Descrição</label>
+                <input type="text" value={formData.descricao} onChange={e => setFormData({...formData, descricao: e.target.value})}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+            </div>
       
         </div>
         <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
