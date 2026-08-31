@@ -99,6 +99,9 @@ export function Layout({ menuAberto }: LayoutProps) {
                     <Link to="/tipo-intervencao-clinica" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
                       Tipos de Intervenções
                     </Link>
+                    <Link to="/doencas" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
+                      Doenças
+                    </Link>
                   </div>
                 )}
               </div>

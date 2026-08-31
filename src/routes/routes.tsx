@@ -15,6 +15,7 @@ import { RelatorioObservacoes } from '../features/sessao/pages/RelatorioObservac
 import { MeusDados } from '../features/usuario/components/MeusDados';
 import { RelatorioGravacoes } from '../features/sessao/pages/RelatorioGravacoes';
 import { useState } from 'react';
+import { GerenciarDoenca } from '../features/doenca/pages/GerenciarDoenca';
 export function AppRoutes()
 {
   const { usuarioLogado } = useAuth();
@@ -39,6 +40,7 @@ export function AppRoutes()
               <Route path="aprovacao-sessoes" element={<AprovacaoSessao/>}></Route>
               <Route path="exercicios" element={<GerenciarExercicio />} />
               <Route path="tipo-intervencao-clinica" element={<GerenciarTipoExercicio/>}></Route>
+              <Route path="doencas" element={<GerenciarDoenca/>}></Route>
             </>
           )}
           <Route path="meus-dados" element={<MeusDados />} />
