@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Doenca } from '../types/doenca';
-import { doencaService } from '../../../services/doenca';
+import { doencaService } from '../../../services/doencaService';
 import { FormDoenca } from '../components/FormDoenca';
 
 export function GerenciarDoenca() 
@@ -138,7 +138,7 @@ export function GerenciarDoenca()
               doencas.map((doenca) => (
                 <tr key={doenca.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{doenca.nome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doenca.descricao}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doenca.descricao || 'Nenhuma'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><div className="flex gap-2 justify-end">
                     <button onClick={() => onAlterar(doenca)}  className="px-3 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all duration-100">Alterar</button>
                     <button onClick={() => excluir(doenca)} className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 active:scale-95 transition-all duration-100">Excluir</button>

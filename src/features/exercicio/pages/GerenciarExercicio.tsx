@@ -69,13 +69,13 @@ export function GerenciarExercicio()
     setExibirFormulario(false); 
   }
 
-  async function salvar(exercicioForm: Exercicio) 
+  async function salvar(dados: FormData) 
   {
     try {
-      if (exercicioForm.id) {
-        await exercicioService.put(exercicioForm);
+      if (dados.get('id')) {
+        await exercicioService.put(dados);
       } else {
-        await exercicioService.add(exercicioForm);
+        await exercicioService.add(dados);
       }
       setExibirFormulario(false); 
       carregandoExercicio(); 

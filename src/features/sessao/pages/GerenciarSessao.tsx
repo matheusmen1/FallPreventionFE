@@ -10,6 +10,7 @@ import { exercicioService } from '../../../services/exercicioService';
 import { FormSessao } from '../components/FormSessao'; 
 import { useAuth } from '../../../contexts/AutoContext';
 import { useSessao } from '../../../contexts/SessaoContext';
+import { tipoExercicioService } from '../../../services/tipoExercicioService';
 export function GerenciarSessao() 
 {
   const [sessoes, setSessoes] = useState<Sessao[]>([]);
@@ -17,7 +18,7 @@ export function GerenciarSessao()
   
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [exercicios, setExercicios] = useState<Exercicio[]>([]);
-
+  const [listaTipoExercicio, setListaTipoExercicio] = useState<any[]>([]);
   const [exibirFormulario, setExibirFormulario] = useState(false);
   const [sessaoEmEdicao, setSessaoEmEdicao] = useState<Sessao | null>(null);
 
@@ -49,13 +50,15 @@ export function GerenciarSessao()
       }
       
 
-      const [dadosPacientes, dadosExercicios] = await Promise.all([
+      const [dadosPacientes, dadosExercicios, dadosTipoExercicio] = await Promise.all([
         pacienteService.getAll(),
-        exercicioService.getAll()
+        exercicioService.getAll(),
+        tipoExercicioService.getAll()
       ]);
 
       setPacientes(dadosPacientes);
       setExercicios(dadosExercicios);
+      setListaTipoExercicio(dadosTipoExercicio);
 
     } catch (error) {
       console.error("Erro ao buscar dados iniciais:", error);
@@ -189,6 +192,7 @@ export function GerenciarSessao()
           sessaoParaAlterar={sessaoEmEdicao}
           listaPacientes={pacientes}
           listaExercicios={exercicios}
+          listaTipoExercicio={listaTipoExercicio}
         />
       </div>
     );
@@ -228,6 +232,7 @@ export function GerenciarSessao()
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsável</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intervenções Clínicas</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observações</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -244,13 +249,16 @@ export function GerenciarSessao()
                     {formatarData(sessao.data_hora)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {sessao.paciente ? sessao.paciente.nome : 'Não Vinculado'}
+                    {sessao.paciente ? sessao.paciente.nome + ' - ' + sessao.paciente.tipo_pessoa : 'Não Vinculado'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {sessao.responsavel ? sessao.responsavel.nome : 'Não Atribuído'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {sessao.sessaoFases ? `${sessao.sessaoFases.length} Intervenção(s) Clínica(s) ` : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {sessao.observacao || 'Nenhuma'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {renderBadgeStatus(sessao.status)}

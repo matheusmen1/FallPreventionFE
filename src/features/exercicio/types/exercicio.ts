@@ -6,4 +6,6 @@ export interface Exercicio{
     descricao: string;
     tipo_exercicio: TipoExercicio;
     codigo_nome: string;
+    url_foto?: string;
+    url_video?: string;
 }

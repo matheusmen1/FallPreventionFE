@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import type { Paciente } from '../types/paciente';
 import { pacienteService } from '../../../services/pacienteService';
 import { FormPaciente } from '../components/FormPaciente'; 
-
+import type { Doenca } from '../../doenca/types/doenca';
+import { doencaService } from '../../../services/doencaService'
 export function GerenciarPaciente() 
 {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
@@ -10,11 +11,21 @@ export function GerenciarPaciente()
   
   const [exibirFormulario, setExibirFormulario] = useState(false);
   const [pacienteEdicao, setPacienteEdicao] = useState<Paciente | null>(null);
-
+  const [listaDoencas, setListaDoencas] = useState<Doenca[]>([]); 
   useEffect(() => {
     carregandoPacientes();
+    carregarDoencas();
   }, []);
 
+  async function carregarDoencas()
+  {
+    try{
+      const dados = await doencaService.getAll();
+      setListaDoencas(dados);
+    } catch (error) {
+      console.error("Erro ao carregar doenças:", error);
+    }
+  }
   async function carregarPacientesByName(nome: string)
   {
     try{
@@ -98,7 +109,8 @@ export function GerenciarPaciente()
             <FormPaciente 
             onCancelar={onCancelar} 
             onSalvar={salvar} 
-            pacienteParaAlterar={pacienteEdicao} 
+            pacienteParaAlterar={pacienteEdicao}
+            listaDoencas={listaDoencas}
             />
         </div>
         );
@@ -125,11 +137,14 @@ export function GerenciarPaciente()
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome Completo</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CPF</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Nascimento</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Nascimento</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Pessoa</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doença</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observações</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
@@ -144,8 +159,11 @@ export function GerenciarPaciente()
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{paciente.nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.cpf}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(paciente.data_nascimento).toLocaleDateString("pt-BR")}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.telefone}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(paciente.data_nascimento).toLocaleDateString("pt-BR")}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.tipo_pessoa}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.doenca?.nome || 'Nenhuma'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.observacao || 'Nenhuma'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><div className="flex gap-2 justify-end">
                     <button onClick={() => onAlterar(paciente)}  className="px-3 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all duration-100">Alterar</button>
                     <button onClick={() => excluir(paciente)} className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 active:scale-95 transition-all duration-100">Excluir</button>

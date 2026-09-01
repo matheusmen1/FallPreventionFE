@@ -12,13 +12,21 @@ export const exercicioService =
         const response = await api.get(`/apis/exercicio/getAllByName/${nome}`);
         return response.data
     },
-    add: async (exercicio: Exercicio): Promise<Exercicio> =>
+    add: async (dados: FormData): Promise<Exercicio> =>
     {
-        const response = await api.post('/apis/exercicio', exercicio);
+        const response = await api.post('/apis/exercicio', dados, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         return response.data;
     },
-    put: async (exercicio: Exercicio): Promise<Exercicio> =>{
-        const response = await api.put('/apis/exercicio', exercicio);
+    put: async (dados: FormData): Promise<Exercicio> =>{
+        const response = await api.put('/apis/exercicio', dados, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         return response.data;
     },
     delete: async (id: number): Promise<void> =>

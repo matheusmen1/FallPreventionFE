@@ -75,7 +75,7 @@ export function Atendimento()
             
             <div className="p-5 border-b border-gray-100 flex justify-between items-start">
               <div>
-                <h3 className="text-lg font-bold text-gray-800">{sessao.paciente.nome}</h3>
+                <h3 className="text-lg font-bold text-gray-800">{sessao.paciente.nome} - {sessao.paciente.tipo_pessoa}</h3>
                 <p className="text-sm text-gray-500">{calcularIdade(sessao.paciente.data_nascimento)} Anos • Agendado Para {new Date(sessao.data_hora).toLocaleString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }  )}</p>
                 
                 <p className="text-sm text-gray-600">{sessao.responsavel.nome}</p>

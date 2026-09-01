@@ -245,7 +245,7 @@ export function ExecucaoSessao({setMenuAberto}: ExecucaoSessaoProps) {
         
         <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">{sessao?.paciente.nome}</h2>
+            <h2 className="text-xl font-bold text-gray-800">{sessao?.paciente.nome} - {sessao?.paciente.tipo_pessoa}</h2>
             <p className="text-sm text-gray-500">{calcularIdade(sessao?.paciente.data_nascimento!)} anos</p>
             
           

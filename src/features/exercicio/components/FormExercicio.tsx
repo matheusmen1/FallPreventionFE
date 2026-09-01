@@ -4,7 +4,7 @@ import type { TipoExercicio } from '../../tipoExercicio/types/tipoExercicio';
 interface FormProps 
 {
   onCancelar: () => void;
-  onSalvar: (exercicio: Exercicio) => void;
+  onSalvar: (dadosParaEnviar: FormData) => void;
   exercicioParaAlterar?: Exercicio | null;
   listaTipoExercicio: TipoExercicio[];
 }
@@ -16,7 +16,24 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
     tipo_exercicio: { id: 0, nome: '' },
     codigo_nome: ''
   });
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const handleSubmit = (e: React.FormEvent) =>
+  {
+    e.preventDefault();
+    
+    const pacote = new FormData();
 
+    pacote.append(
+      "exercicio", 
+      new Blob([JSON.stringify(formData)], { type: "application/json" })
+    );
+
+    if (videoFile) pacote.append("video", videoFile);
+    if (fotoFile) pacote.append("foto", fotoFile);
+
+    onSalvar(pacote);
+  };
   useEffect(() => {
     if (exercicioParaAlterar) {
       setFormData(exercicioParaAlterar);
@@ -29,7 +46,7 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
         {exercicioParaAlterar ? 'Alterar Intervenção Clínica' : 'Nova Intervenção Clínica'}
       </h2>
 
-      <form onSubmit={(e) => { e.preventDefault(); onSalvar(formData); }} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nome</label>
@@ -69,7 +86,24 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
                 ))}
               </select>
             </div>
-            
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Foto (Opcional)</label>
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={e => setFotoFile(e.target.files?.[0] || null)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-blue-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+            />
+          </div>
+            <div>
+            <label className="block text-sm font-medium text-gray-700">Vídeo (Opcional)</label>
+            <input 
+              type="file" 
+              accept="video/*" 
+              onChange={e => setVideoFile(e.target.files?.[0] || null)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-blue-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+            />
+          </div>
         </div>
         <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
           <button type="button" onClick={onCancelar}
