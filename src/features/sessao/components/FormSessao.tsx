@@ -207,13 +207,13 @@ const exerciciosFiltrados = filtroTipoId
                     <div>
                       <span className="block text-xs text-slate-500 font-semibold mb-1">Doença</span>
                       <span className="text-sm text-slate-800 font-medium">
-                        {formData.paciente.doenca?.nome || 'Nenhuma'}
+                        {formData.paciente.doenca?.nome  || 'Nenhuma'}
                       </span>
                     </div>
                     <div>
                       <span className="block text-xs text-slate-500 font-semibold mb-1">Observações</span>
                       <span className="text-sm text-slate-800 font-medium">
-                        {formData.paciente.observacao || 'Nenhuma'}
+                        {formData.paciente.observacao  || 'Nenhuma'}
                       </span>
                     </div>
                   </div>

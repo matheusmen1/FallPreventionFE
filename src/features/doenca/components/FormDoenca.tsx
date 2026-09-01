@@ -34,7 +34,7 @@ export function FormDoenca({ onCancelar, onSalvar, doencaParaAlterar }: FormProp
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700">Descrição</label>
+                <label className="block text-sm font-medium text-gray-700">Descrição (Opcional)</label>
                 <input type="text" value={formData.descricao} onChange={e => setFormData({...formData, descricao: e.target.value})}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
             </div>
