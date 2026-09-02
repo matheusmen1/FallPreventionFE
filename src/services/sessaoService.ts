@@ -103,5 +103,9 @@ export const sessaoService = {
     },
     reiniciarExercicio: async (): Promise<void> => {
         await api.put(`/apis/sessao/reiniciar-exercicio`);
+    },
+    getSessaoObservacaoById: async (sessaoId: number): Promise<SessaoObservacao> => {
+        const response = await api.get(`/apis/sessao/getSessaoObservacaoById/${sessaoId}`);
+        return response.data;
     }
 }

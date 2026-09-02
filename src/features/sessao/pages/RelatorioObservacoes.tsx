@@ -82,146 +82,113 @@ export function RelatorioObservacoes()
   }
 
   return (
-    <div className="space-y-6">
-      
-  
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Relatório de Observações</h1>
-      </div>
+  <div className="space-y-6">
+    
+    <div className="flex justify-between items-center">
+      <h1 className="text-2xl font-bold text-gray-800">Relatório de Observações</h1>
+    </div>
 
-      <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              1. Selecione o Paciente:
-            </label>
-            <select
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
-              value={pacienteSelecionado}
-              onChange={ (e) => {
-                const pacienteId = e.target.value === '' ? '' : Number(e.target.value);
-                setPacienteSelecionado(pacienteId);
-                carregarSessoesByPaciente(pacienteId as number);
-                setSessaoSelecionada('');
-              }}
-              disabled={carregando}
-            >
-              <option value="">-- Selecione um Paciente --</option>
-              {pacientes.map((p) => (
-                <option key={p.id} value={p.id}>{p.nome}</option>
-              ))}
-            </select>
-          </div>
+    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            1. Selecione o Paciente:
+          </label>
+          <select
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none bg-white transition-colors"
+            value={pacienteSelecionado}
+            onChange={(e) => {
+              const pacienteId = e.target.value === '' ? '' : Number(e.target.value);
+              setPacienteSelecionado(pacienteId);
+              carregarSessoesByPaciente(pacienteId as number);
+              setSessaoSelecionada('');
+            }}
+            disabled={carregando}
+          >
+            <option value="">-- Selecione um Paciente --</option>
+            {pacientes.map((p) => (
+              <option key={p.id} value={p.id}>{p.nome}</option>
+            ))}
+          </select>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              2. Selecione a Sessão:
-            </label>
-            <select
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none bg-white disabled:bg-gray-100 disabled:text-gray-500"
-              value={sessaoSelecionada}
-              onChange={(e) => {
-                setSessaoSelecionada(e.target.value === '' ? '' : Number(e.target.value));
-                if (e.target.value !== '' && pacienteSelecionado !== '') {
-                  carregarObservacoesBySessaoIdAndPacienteId(Number(e.target.value), pacienteSelecionado as number);
-                }
-
-              }}
-                
-               
-              disabled={carregando}
-            >
-              <option value="">
-                {pacienteSelecionado === '' 
-                  ? '-- Selecione o Paciente Primeiro --' 
-                  : sessoes.length === 0 
-                    ? '-- Nenhuma Sessão Encontrada --' 
-                    : '-- Escolha Uma Sessão --'}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            2. Selecione a Sessão:
+          </label>
+          <select
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none bg-white disabled:bg-gray-100 disabled:text-gray-500 transition-colors"
+            value={sessaoSelecionada}
+            onChange={(e) => {
+              setSessaoSelecionada(e.target.value === '' ? '' : Number(e.target.value));
+              if (e.target.value !== '' && pacienteSelecionado !== '') {
+                carregarObservacoesBySessaoIdAndPacienteId(Number(e.target.value), pacienteSelecionado as number);
+              }
+            }}
+            disabled={carregando}
+          >
+            <option value="">
+              {pacienteSelecionado === '' 
+                ? '-- Selecione o Paciente Primeiro --' 
+                : sessoes.length === 0 
+                  ? '-- Nenhuma Sessão Encontrada --' 
+                  : '-- Escolha Uma Sessão --'}
+            </option>
+            {sessoes.map((sessao) => (
+              <option key={sessao.id} value={sessao.id}>
+                Sessão - {formatarData(sessao.data_hora)} - {sessao.status}
               </option>
-              {sessoes.map((sessao) => (
-                <option key={sessao.id} value={sessao.id}>
-                  Sessão - {formatarData(sessao.data_hora)} - {sessao.status}
-                </option>
-              ))}
-            </select>
-          </div>
-
+            ))}
+          </select>
         </div>
       </div>
+    </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                Data / Hora
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                Intervenção Clínica
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/4">
-                Observação
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {carregandoTabela ? (
-              <tr>
-                <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-                  Carregando Observações...
-                </td>
-              </tr>
-            ) : sessaoSelecionada === '' ? (
-              <tr>
-                <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-                  
-                </td>
-              </tr>
-            ) : observacoes.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-                  Nenhuma Observação Encontrada Para Esta Sessão.
-                </td>
-              </tr>
-            ) : (
-              observacoes.map((obs) => (
-                <tr key={obs.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                    {formatarData(obs.data_hora)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {obs.sessaoFase ? (
-                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {obs.sessaoFase.ordem}º - {obs.sessaoFase.exercicio.nome}
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                        Geral
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 whitespace-pre-wrap">
-                    {obs.observacao || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button 
-                          onClick={() => onExcluirObservacao(obs.id!)} 
-                          className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 active:scale-95 transition-all duration-100"
-                        >
-                          Excluir
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden min-h-[300px]">
+      
+      <div className="bg-slate-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          {sessaoSelecionada ? 'Prontuário da Sessão' : 'Anotações'}
+        </h2>
       </div>
 
+      <div className="p-6 flex-1 bg-white">
+        {carregandoTabela ? (
+          <div className="h-full flex items-center justify-center text-gray-500 font-medium animate-pulse">
+            Carregando Observações...
+          </div>
+        ) : sessaoSelecionada === '' ? (
+          <div className="h-full flex flex-col items-center justify-center text-gray-400">
+            
+            <p>Selecione uma Sessão Acima Para ver o Relatório.</p>
+          </div>
+        ) : observacoes.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-gray-400">
+            <p>Nenhuma Observação Registrada Para Esta Sessão.</p>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {observacoes.map((obs) => (
+              <div key={obs.id} className="relative group pl-4 border-l-2 border-blue-200 hover:border-blue-500 transition-colors">
+                
+                <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed bg-slate-50 p-4 rounded-r-xl rounded-bl-xl border border-slate-100">
+                  {obs.observacao || <span className="text-gray-400 italic">Nenhuma Observação Registrada.</span>}
+                </div>
+                <div className="flex justify-between items-start mb-3">
+                  <button 
+                    onClick={() => onExcluirObservacao(obs.id!)} 
+                    className="text-xs px-3 py-1.5 rounded bg-white border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-all shadow-sm flex items-center gap-1 opacity-70 group-hover:opacity-100"
+                    title="Excluir Anotação"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
-  );
+  </div>
+);
 }

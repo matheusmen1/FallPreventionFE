@@ -24,6 +24,7 @@ export function ExecucaoSessao({setMenuAberto}: ExecucaoSessaoProps) {
   const [isSalvandoObservacao, setIsSalvandoObservacao] = useState(false);
   const [isGravando, setIsGravando] = useState(false);
   const [flag, setFlag] = useState(false);
+  const [sessaoObservacao, setSessaoObservacao] = useState<SessaoObservacao | null>(null);
   useEffect(() => {
     carregarSessao();
     setMenuAberto(false);
@@ -72,7 +73,23 @@ export function ExecucaoSessao({setMenuAberto}: ExecucaoSessaoProps) {
       console.error("Erro ao carregar sessão: ", error);
     }
  }
-  
+  async function buscarSessaoObservacao() 
+  {
+    try{
+      const dado = await sessaoService.getSessaoObservacaoById(Number.parseInt(id!));
+      if (dado != null)
+      {
+        setSessaoObservacao(dado);
+        console.log("Observação da Sessão: ", dado.observacao);
+      }
+      else
+      {
+        setSessaoObservacao(null);
+      }
+    }catch(error){
+      console.error("Erro ao buscar observação da sessão: ", error);
+    }
+  }
 
   async function onPausar()
   {
@@ -339,8 +356,10 @@ export function ExecucaoSessao({setMenuAberto}: ExecucaoSessaoProps) {
           </button>
 
             <button 
-              onClick={() => setIsModalAberto(true)}
-              disabled={sessao?.status === 'APROVADA'}
+              onClick={() => {
+                setIsModalAberto(true);
+                buscarSessaoObservacao();
+              }}
               className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
               Adicionar Observação
             </button>
@@ -413,7 +432,7 @@ export function ExecucaoSessao({setMenuAberto}: ExecucaoSessaoProps) {
       </div>
       {isModalAberto && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-xl shadow-2xl w-[500px] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-xl shadow-2xl w-[600px] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             
             <div className="px-6 py-4 border-b border-gray-100 bg-slate-50 flex justify-between items-center">
               <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -431,8 +450,9 @@ export function ExecucaoSessao({setMenuAberto}: ExecucaoSessaoProps) {
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Observação
               </label>
+              
               <textarea
-                className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="w-full h-20 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                 placeholder="Digite sua Observação Aqui..."
                 value={observacao}
                 onChange={(e) => setObservacao(e.target.value)}
@@ -441,6 +461,15 @@ export function ExecucaoSessao({setMenuAberto}: ExecucaoSessaoProps) {
               <p className="text-xs text-gray-500 mt-2">
                 Sua Observação Será Adicionada à Sessão.
               </p>
+              <br/>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Últimas Observações
+              </label>
+              <div className="w-full h-30 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none whitespace-pre-wrap">
+                <p className="text-sm text-gray-500">
+                  {sessaoObservacao?.observacao || "Nenhuma Observação Registrada."}
+                </p>
+              </div>
             </div>
 
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
