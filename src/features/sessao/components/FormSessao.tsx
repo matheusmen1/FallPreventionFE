@@ -403,8 +403,8 @@ const exerciciosFiltrados = filtroTipoId
                             ordem: novaOrdem,
                             exercicio: exercicioEmConfiguracao,
                             is_repeticao: configTemp.is_repeticao,
-                            tempo: !configTemp.is_repeticao ? configTemp.valor : undefined,
-                            repeticao: configTemp.is_repeticao ? configTemp.valor : undefined
+                            tempo: !configTemp.is_repeticao ? configTemp.valor : 5,
+                            repeticao: configTemp.is_repeticao ? configTemp.valor : 30
                           };
                           
                           setFormData({
