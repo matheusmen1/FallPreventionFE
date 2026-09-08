@@ -21,6 +21,10 @@ export const sessaoService = {
         const response = await api.get(`/apis/sessao/pendentes/${fisioterapeutaId}`);
         return response.data;
     },
+    getAllByResponsavelIdAndStatus: async (responsavelId: number, status: string): Promise<Sessao[]> => {
+        const response = await api.get(`/apis/sessao/getAllByResponsavelIdAndStatus/${responsavelId}/${status}`);
+        return response.data;
+    },
     getAllByResponsavelId: async (responsavelId: number): Promise<Sessao[]> => {
         const response = await api.get(`/apis/sessao/getAllByResponsavelId/${responsavelId}`);
         return response.data;

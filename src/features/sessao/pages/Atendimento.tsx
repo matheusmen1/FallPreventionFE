@@ -15,7 +15,7 @@ export function Atendimento()
   async function carregarSessoesAprovadas()
   {
     try{
-      const dados = await sessaoService.getAllByStatus("APROVADA");
+      const dados = await sessaoService.getAllByStatusId("APROVADA", usuarioLogado?.id!);
       setSessoes(dados)
     }catch(error){
       console.log("Erro ao Carregar Sessões: ", error)

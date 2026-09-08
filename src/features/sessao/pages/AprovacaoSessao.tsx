@@ -14,7 +14,7 @@ export function AprovacaoSessao()
   const [motivoRecusa, setMotivoRecusa] = useState('');
 
   const { usuarioLogado } = useAuth();
-  const { atualizarSessoes, carregarSessoesAprovadas } = useSessao();
+  const { atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores } = useSessao();
    useEffect(() => {
       carregarSessoesPendentes();
     }, []);
@@ -41,6 +41,7 @@ export function AprovacaoSessao()
       await sessaoService.aprovarSessao(novoAprovacaoSessao, idSessao)
       carregarSessoesPendentes();
       carregarSessoesAprovadas();
+      carregarSessoesAprovadasMonitores();
       atualizarSessoes();
     }
   }

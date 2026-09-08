@@ -7,14 +7,15 @@ interface LayoutProps {
 }
 export function Layout({ menuAberto }: LayoutProps) {
   const { usuarioLogado, logout } = useAuth();
-  const { qtdPendentes, qtdRecusadas, qtdeAprovadas } = useSessao();
-  
+  const { qtdPendentes, qtdRecusadas, qtdeAprovadas, qtdeAprovadasMonitores } = useSessao();
+
   const [dropdownAberto, setDropdownAberto] = useState(false);
-  
+  const [sessoesDropdownAberto, setSessoesDropdownAberto] = useState(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const cargoTexto = usuarioLogado?.nivel === 1 ? 'Fisioterapeuta' : 'Monitor';
-  
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -25,41 +26,79 @@ export function Layout({ menuAberto }: LayoutProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   useEffect(() => {
-  
+
   }, [menuAberto]);
 
   return (
     <div className="flex h-screen bg-gray-100 font-sans">
-      
-      <aside 
-        className={`bg-slate-900 text-white z-10 shadow-lg transition-all duration-300 ease-in-out overflow-hidden flex flex-col ${
-          menuAberto ? 'w-64' : 'w-0'
-        }`}
+
+      <aside
+        className={`bg-slate-900 text-white z-10 shadow-lg transition-all duration-300 ease-in-out overflow-hidden flex flex-col ${menuAberto ? 'w-64' : 'w-0'
+          }`}
       >
         <div className="w-64 flex flex-col h-full">
           <div className="h-16 flex items-center px-6 text-xl font-bold border-b border-slate-800 shrink-0">
-          
+
             Fall Prevention VR
           </div>
-          
+
           <nav className="flex-1 p-4 flex flex-col gap-6 overflow-y-auto mt-2">
             <div>
               <h3 className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                 Sessões
               </h3>
-              <Link to="/atendimento" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors flex items-center gap-2 font-medium text-emerald-400">
-                
-                Sessões Disponíveis 
-                {qtdeAprovadas > 0 && (
-                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">
-                    {qtdeAprovadas}
-                  </span>
-                )}
-              </Link>
+              <button
+                type="button"
+                onClick={() => setSessoesDropdownAberto(!sessoesDropdownAberto)}
+                aria-expanded={sessoesDropdownAberto}
+                className="w-full px-4 py-2 rounded-md hover:bg-slate-800 transition-colors flex items-center justify-between gap-2 font-medium text-emerald-400"
+              >
+                <span className="flex items-center gap-2">
+                  Sessões Disponíveis
+
+                </span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${sessoesDropdownAberto ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 9-7 7-7-7" />
+                </svg>
+              </button>
+              {sessoesDropdownAberto && (
+                <div className="ml-4 mt-1 border-l border-slate-700 pl-2">
+                  <Link
+                    to="/atendimento"
+                    className="block px-4 py-2 rounded-md hover:bg-slate-800 transition-colors text-sm"
+                    onClick={() => setSessoesDropdownAberto(false)}
+                  >
+                    Minhas Sessões
+                    {qtdeAprovadas > 0 && (
+                      <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">
+                        {qtdeAprovadas}
+                      </span>
+                    )}
+                  </Link>
+                  {usuarioLogado?.nivel === 1 && (<Link
+                    to="/atendimento-monitores"
+                    className="block px-4 py-2 rounded-md hover:bg-slate-800 transition-colors text-sm"
+                    onClick={() => setSessoesDropdownAberto(false)}
+                  >
+                    Meus Monitores
+                    {qtdeAprovadasMonitores > 0 && (
+                      <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-2">
+                        {qtdeAprovadasMonitores}
+                      </span>
+                    )}
+                  </Link>)}
+                </div>
+              )}
               {usuarioLogado?.nivel === 1 && (
                 <Link to="/aprovacao-sessoes" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors flex justify-between items-center">
-                   
-                   Sessões Pendentes
+
+                  Sessões Pendentes
                   {qtdPendentes > 0 && (
                     <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                       {qtdPendentes}
@@ -85,7 +124,7 @@ export function Layout({ menuAberto }: LayoutProps) {
               </h3>
               <div className="flex flex-col gap-1">
                 <Link to="/pacientes" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors">
-                  
+
                   Pacientes
                 </Link>
                 {usuarioLogado?.nivel === 1 && (
@@ -106,7 +145,7 @@ export function Layout({ menuAberto }: LayoutProps) {
                 )}
               </div>
             </div>
-            
+
             <div>
               <h3 className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                 Relatórios
@@ -119,22 +158,22 @@ export function Layout({ menuAberto }: LayoutProps) {
                   Gravações
                 </Link>
               </div>
-            </div>      
+            </div>
           </nav>
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        
+
         <header className="h-16 bg-white shadow-sm border-b flex items-center justify-between px-6 z-0 transition-all duration-300">
-          
+
           <div className="flex items-center gap-4">
-          
+
             <h2 className="text-lg font-semibold text-gray-700">Painel de Gerenciamento</h2>
           </div>
-          
+
           <div className="relative" ref={dropdownRef}>
-            <button 
+            <button
               onClick={() => setDropdownAberto(!dropdownAberto)}
               className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none"
             >
@@ -151,8 +190,8 @@ export function Layout({ menuAberto }: LayoutProps) {
                 {usuarioLogado?.nome?.charAt(0)}
               </div>
 
-              <svg 
-                className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${dropdownAberto ? 'rotate-180' : ''}`} 
+              <svg
+                className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${dropdownAberto ? 'rotate-180' : ''}`}
                 fill="none" stroke="currentColor" viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -161,17 +200,17 @@ export function Layout({ menuAberto }: LayoutProps) {
 
             {dropdownAberto && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200 z-50 animate-fade-in-up">
-                <Link 
-                    to="/meus-dados"
-                    onClick={() => setDropdownAberto(false)}
+                <Link
+                  to="/meus-dados"
+                  onClick={() => setDropdownAberto(false)}
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   Meus Dados
                 </Link>
-                
+
                 <hr className="border-gray-100 my-1" />
-                
-                <button 
+
+                <button
                   onClick={() => {
                     setDropdownAberto(false);
                     logout();
