@@ -187,7 +187,7 @@ export function ExecucaoSessao({setMenuAberto}: ExecucaoSessaoProps) {
       {
        await sessaoService.sairSala(sessao.id);
        carregarSessoesAprovadas();
-       navigate(`/atendimento`);
+       navigate(-1);
       }
       
       
@@ -269,7 +269,7 @@ export function ExecucaoSessao({setMenuAberto}: ExecucaoSessaoProps) {
           </div>
           <button onClick={onSairSala} className="text-red-500 text-sm font-bold hover:underline">
             
-            Sair da Sala
+            Sair da Sessão
           </button>
         </div>
 

@@ -7,6 +7,8 @@ interface SessaoContextData {
   qtdRecusadas: number;
   qtdeAprovadas: number;
   qtdeAprovadasMonitores: number;
+  qtdeAprovadasAutorizadas: number;
+  carregarSessoesAprovadasAutorizadas(): Promise<void>;
   carregarSessoesAprovadas: () => Promise<void>;
   atualizarSessoes: () => Promise<void>;
   carregarSessoesAprovadasMonitores: () => Promise<void>;
@@ -20,6 +22,7 @@ export function SessaoProvider({ children }: { children: ReactNode })
   const [qtdRecusadas, setQtdRecusadas] = useState(0);
   const [qtdeAprovadas, setQtdeAprovadas] = useState(0);
   const [qtdeAprovadasMonitores, setQtdeAprovadasMonitores] = useState(0);
+  const [qtdeAprovadasAutorizadas, setQtdeAprovadasAutorizadas] = useState(0);
   const { usuarioLogado } = useAuth();
 
   async function atualizarSessoes()
@@ -67,14 +70,27 @@ export function SessaoProvider({ children }: { children: ReactNode })
       }
     }
   }
+  async function carregarSessoesAprovadasAutorizadas()
+  {
+    if (usuarioLogado)
+    {
+      try {
+        const dados = await sessaoService.getAllSessoesAutorizadasByMonitor(usuarioLogado?.id!, "APROVADA");
+        setQtdeAprovadasAutorizadas(dados.length);
+      } catch (error) {
+        console.error("Erro ao Buscar Sessões Aprovadas: ", error);
+      }
+    }
+  }
   useEffect(() => {
     atualizarSessoes();
     carregarSessoesAprovadas();
     carregarSessoesAprovadasMonitores();
+    carregarSessoesAprovadasAutorizadas();
   }, [usuarioLogado]);
 
   return (
-    <SessaoContext.Provider value={{ qtdPendentes, qtdRecusadas, qtdeAprovadas, qtdeAprovadasMonitores,atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores }}>
+    <SessaoContext.Provider value={{ qtdPendentes, qtdRecusadas, qtdeAprovadas, qtdeAprovadasMonitores, qtdeAprovadasAutorizadas, carregarSessoesAprovadasAutorizadas, atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores }}>
       {children}
     </SessaoContext.Provider>
   );

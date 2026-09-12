@@ -23,7 +23,7 @@ export function GerenciarSessao()
   const [sessaoEmEdicao, setSessaoEmEdicao] = useState<Sessao | null>(null);
 
   const { usuarioLogado } = useAuth();
-  const { atualizarSessoes, carregarSessoesAprovadas } = useSessao();
+  const { atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores } = useSessao();
   const [btSelecionado, setBtSelecionado] = useState(false);
 
   useEffect(() => {
@@ -148,6 +148,7 @@ export function GerenciarSessao()
         carregarSessoes(); 
         carregarSessoesAprovadas();
         atualizarSessoes();
+        carregarSessoesAprovadasMonitores();
       } catch (error) {
         console.error("Erro ao excluir:", error);
         alert("Erro ao excluir a sessão.");

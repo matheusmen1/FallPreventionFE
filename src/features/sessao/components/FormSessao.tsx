@@ -5,6 +5,8 @@ import type { Exercicio } from '../../exercicio/types/exercicio';
 import { useAuth } from '../../../contexts/AutoContext'; 
 import type { TipoExercicio } from '../../tipoExercicio/types/tipoExercicio';
 import { API_URL } from '../../../services/api';
+import { usuarioService } from '../../../services/usuarioService';
+import type { Usuario } from '../../usuario/types/usuario';
 
 interface FormProps {
   onCancelar: () => void;
@@ -27,6 +29,8 @@ export function FormSessao({
   const { usuarioLogado } = useAuth(); 
   
   const [passoAtual, setPassoAtual] = useState(1);
+  const [monitores, setMonitores] = useState<Usuario[]>([]);
+  const [carregandoMonitores, setCarregandoMonitores] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Sessao>>({
     data_hora: '',
@@ -44,6 +48,15 @@ const [configTemp, setConfigTemp] = useState({ is_repeticao: false, valor: 30 })
 const exerciciosFiltrados = filtroTipoId 
   ? listaExercicios.filter(ex => ex.tipo_exercicio.id === filtroTipoId) 
   : listaExercicios;
+
+  const monitoresDisponiveis = monitores.filter(monitor => monitor.id !== usuarioLogado?.id && sessaoParaAlterar?.responsavel?.id !== monitor.id);
+  const montarSessaoParaSalvar = (): Sessao => ({
+    ...(formData as Sessao),
+    sessaoMonitoresAutorizados: (formData.sessaoMonitoresAutorizados || []).filter(
+      monitor => monitor.id !== usuarioLogado?.id
+    )
+  });
+
   useEffect(() => {
     if (sessaoParaAlterar) {
       let dataFormatada = sessaoParaAlterar.data_hora;
@@ -54,10 +67,63 @@ const exerciciosFiltrados = filtroTipoId
       setFormData({
         ...sessaoParaAlterar,
         data_hora: dataFormatada,
-        sessaoFases: sessaoParaAlterar.sessaoFases || [] 
+        sessaoFases: sessaoParaAlterar.sessaoFases || [],
+        sessaoMonitoresAutorizados: (sessaoParaAlterar.sessaoMonitoresAutorizados || []).filter(
+          monitor => monitor.id !== usuarioLogado?.id
+        )
       });
     }
-  }, [sessaoParaAlterar]);
+  }, [sessaoParaAlterar, usuarioLogado?.id]);
+
+  useEffect(() => {
+    async function carregarMonitores() {
+      if (!usuarioLogado?.id) return;
+
+      const responsavelId = usuarioLogado.nivel === 1
+        ? usuarioLogado.id
+        : usuarioLogado.usr_responsavel_id ?? usuarioLogado.responsavel?.id;
+
+      if (!responsavelId) return;
+
+      try {
+        setCarregandoMonitores(true);
+        const [dadosMonitores, dadosAutorizados] = await Promise.all([
+          usuarioService.getMonitoresByResponsavel({
+            ...usuarioLogado,
+            id: responsavelId
+          }),
+          sessaoParaAlterar?.id
+            ? usuarioService.getAllMonitoresAutorizados(sessaoParaAlterar.id)
+            : Promise.resolve([])
+        ]);
+
+        setMonitores(dadosMonitores.filter(monitor => monitor.id !== usuarioLogado.id));
+
+        if (sessaoParaAlterar?.id) {
+          setFormData(prev => ({
+            ...prev,
+            sessaoMonitoresAutorizados: dadosAutorizados.filter(monitor => monitor.id !== usuarioLogado.id)
+          }));
+        }
+      } catch (error) {
+        console.error('Erro ao buscar monitores:', error);
+      } finally {
+        setCarregandoMonitores(false);
+      }
+    }
+
+    carregarMonitores();
+  }, [usuarioLogado, sessaoParaAlterar?.id]);
+
+  useEffect(() => {
+    if (!usuarioLogado?.id) return;
+    setFormData(prev => ({
+      ...prev,
+      sessaoMonitoresAutorizados: (prev.sessaoMonitoresAutorizados || []).filter(
+        monitor => monitor.id !== usuarioLogado.id
+      )
+    }));
+  }, [usuarioLogado?.id]);
 
   function removerFase(indexParaRemover: number)
    {
@@ -123,6 +189,7 @@ const exerciciosFiltrados = filtroTipoId
             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${passoAtual === 4 ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'}`}>4</div>
             <span className="ml-2 font-medium hidden sm:inline">Agendamento</span>
           </div>
+
         </div>
       </div>
 
@@ -140,7 +207,7 @@ const exerciciosFiltrados = filtroTipoId
             </p>
           </div>
         )}
-        <form onSubmit={(e) => { e.preventDefault(); onSalvar(formData as Sessao); }}>
+        <form onSubmit={(e) => { e.preventDefault(); onSalvar(montarSessaoParaSalvar()); }}>
           
           {passoAtual === 1 && (
             <div className="animate-fade-in">
@@ -427,6 +494,7 @@ const exerciciosFiltrados = filtroTipoId
             )}
 
           {passoAtual === 3 && (
+            <>
             <div className="animate-fade-in max-w-3xl mx-auto">
               <h3 className="text-xl font-semibold text-gray-800 mb-2">Observações (Opcional)</h3>
               <p className="text-sm text-gray-500 mb-6">
@@ -449,9 +517,41 @@ const exerciciosFiltrados = filtroTipoId
                 </div>
               </div>
             </div>
+            <div className="animate-fade-in max-w-3xl mx-auto">
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Autorizar Monitores</h3>
+              <p className="text-sm text-gray-500 mb-6">Selecione os Monitores que Poderão Executar Esta Sessão.</p>
+
+              {carregandoMonitores ? (
+                <p className="text-gray-500">Carregando Monitores...</p>
+              ) : monitoresDisponiveis.length === 0 ? (
+                <p className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-gray-500">Nenhum Monitor Encontrado.</p>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {monitoresDisponiveis.map(monitor => {
+                    const selecionado = formData.sessaoMonitoresAutorizados?.some(item => item.id === monitor.id);
+                    return (
+                      <label key={monitor.id} className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${selecionado ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-blue-300'}`}>
+                        <input
+                          type="checkbox"
+                          checked={selecionado}
+                          onChange={event => setFormData({
+                            ...formData,
+                            sessaoMonitoresAutorizados: event.target.checked
+                              ? [...(formData.sessaoMonitoresAutorizados || []), monitor]
+                              : (formData.sessaoMonitoresAutorizados || []).filter(item => item.id !== monitor.id)
+                          })}
+                          className="h-4 w-4 text-blue-600"
+                        />
+                        <span className="font-medium text-gray-800">{monitor.nome}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            </>
           )}
 
-        
           {passoAtual === 4 && (
             <div className="animate-fade-in flex flex-col lg:flex-row gap-8">
               <div className="flex-1">
@@ -525,7 +625,7 @@ const exerciciosFiltrados = filtroTipoId
                   type="button" 
                   onClick={(e) => {
                      e.preventDefault(); 
-                     onSalvar(formData as Sessao); 
+                    onSalvar(montarSessaoParaSalvar()); 
                   }}
                   disabled={!formData.data_hora}
                   className="rounded-lg bg-green-600 px-8 py-3 font-bold text-white hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2 shadow-lg shadow-green-200"

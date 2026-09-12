@@ -11,6 +11,7 @@ export interface Sessao{
     status: string;
     sessaoFases: SessaoFase[];
     aprovacaoSessao: AprovacaoSessao;
+    sessaoMonitoresAutorizados?: Usuario[];
     ordemAtual?: number; 
     observacao?: string;
 }

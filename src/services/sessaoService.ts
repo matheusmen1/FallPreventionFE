@@ -111,5 +111,9 @@ export const sessaoService = {
     getSessaoObservacaoById: async (sessaoId: number): Promise<SessaoObservacao> => {
         const response = await api.get(`/apis/sessao/getSessaoObservacaoById/${sessaoId}`);
         return response.data;
+    },
+    getAllSessoesAutorizadasByMonitor: async (monitorId: number, status: string): Promise<Sessao[]> => {
+        const response = await api.get(`/apis/sessao/getAllSessoesAutorizadasByMonitor/${monitorId}/${status}`);
+        return response.data;
     }
 }

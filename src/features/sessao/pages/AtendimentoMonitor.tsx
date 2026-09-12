@@ -25,15 +25,8 @@ export function AtendimentoMonitor()
   {
     if (usuarioLogado != null && usuarioLogado.id != null)
     try{
-      const dados = await sessaoService.getById(idSessao);
-      if (dados.responsavel.id === usuarioLogado.id)
-      {
-        navigate(`/sessao/execucao/${idSessao}`);
-      }
-      else
-      {
-        alert("Sessão Não Pertence ao Usuário Logado")
-      }
+      navigate(`/sessao/execucao/${idSessao}`);
+     
     }catch(error){
       console.log("Erro ao Iniciar Sessão: ", error)
     }
@@ -117,7 +110,7 @@ export function AtendimentoMonitor()
                   onClick={() => iniciarSessao(sessao.id!)}
                   className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all text-white font-bold rounded-lg shadow-md flex justify-center items-center gap-2"
                 >
-                  ABRIR SALA
+                  ABRIR SESSÃO
                 </button>
             </div>
           </div>

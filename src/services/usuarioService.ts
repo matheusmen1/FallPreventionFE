@@ -31,5 +31,10 @@ export const usuarioService =
     delete: async (id: string): Promise<void> => 
     {
         await api.delete(`/apis/usuario/${id}`);
+    },
+    getAllMonitoresAutorizados: async (sessaoId: number): Promise<Usuario[]> =>
+    {
+        const response = await api.get(`/apis/usuario/getAllMonitoresAutorizados/${sessaoId}`);
+        return response.data;
     }
 };
