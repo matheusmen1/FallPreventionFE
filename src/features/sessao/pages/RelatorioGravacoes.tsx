@@ -157,7 +157,7 @@ export function RelatorioGravacoes() {
               </option>
               {sessoes.map((sessao) => (
                 <option key={sessao.id} value={sessao.id}>
-                  Sessão - {formatarData(sessao.data_hora)} - {sessao.status}
+                  Sessão de {formatarData(sessao.data_hora)}
                 </option>
               ))}
             </select>
@@ -189,7 +189,7 @@ export function RelatorioGravacoes() {
             ) : sessaoSelecionada === '' ? (
               <tr>
                 <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                  
+                  Selecione um Paciente e uma Sessão para Visualizar as Gravações.
                 </td>
               </tr>
             ) : gravacoes.length === 0 ? (

@@ -136,7 +136,7 @@ export function RelatorioObservacoes()
             </option>
             {sessoes.map((sessao) => (
               <option key={sessao.id} value={sessao.id}>
-                Sessão - {formatarData(sessao.data_hora)} - {sessao.status}
+                Sessão de {formatarData(sessao.data_hora)}
               </option>
             ))}
           </select>
@@ -148,7 +148,7 @@ export function RelatorioObservacoes()
       
       <div className="bg-slate-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-          {sessaoSelecionada ? 'Prontuário da Sessão' : 'Anotações'}
+          {sessaoSelecionada ? '' : 'Observações da Sessão'}
         </h2>
       </div>
 
@@ -174,10 +174,11 @@ export function RelatorioObservacoes()
                 <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed bg-slate-50 p-4 rounded-r-xl rounded-bl-xl border border-slate-100">
                   {obs.observacao || <span className="text-gray-400 italic">Nenhuma Observação Registrada.</span>}
                 </div>
+                <br/>
                 <div className="flex justify-between items-start mb-3">
-                  <button 
+                   <button 
                     onClick={() => onExcluirObservacao(obs.id!)} 
-                    className="text-xs px-3 py-1.5 rounded bg-white border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-all shadow-sm flex items-center gap-1 opacity-70 group-hover:opacity-100"
+                    className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 active:scale-95 transition-all duration-100"
                     title="Excluir Anotação"
                   >
                     Excluir

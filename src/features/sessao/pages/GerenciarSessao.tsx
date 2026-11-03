@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Sessao } from '../types/sessao'; 
 import type { Paciente } from '../../paciente/types/paciente';
 import type { Exercicio } from '../../exercicio/types/exercicio';
@@ -23,6 +24,7 @@ export function GerenciarSessao()
   const [sessaoEmEdicao, setSessaoEmEdicao] = useState<Sessao | null>(null);
 
   const { usuarioLogado } = useAuth();
+  const navigate = useNavigate();
   const { atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores } = useSessao();
   const [btSelecionado, setBtSelecionado] = useState(false);
 
@@ -168,7 +170,7 @@ export function GerenciarSessao()
     const statusNormalizado = status?.toUpperCase() || '';
     switch (statusNormalizado) {
       case 'APROVADA':
-        return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aprovada</span>;
+        return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Aprovada</span>;
       case 'PENDENTE':
         return <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Pendente</span>;
       case 'CONCLUIDA':
@@ -266,6 +268,13 @@ export function GerenciarSessao()
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex gap-2 justify-end">
+                      {sessao.status === 'CONCLUIDA' &&(
+                      <button
+                        onClick={() => navigate(`/relatorio/sessao/${sessao.id}`)}
+                        className="px-3 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all duration-100"
+                      >
+                        Resultado
+                      </button>)}
                       <button 
                         onClick={() => onAlterar(sessao)}  
                         className="px-3 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all duration-100"

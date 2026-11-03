@@ -76,7 +76,7 @@ export function AprovacaoSessao()
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Sessões Pendentes</h1>
-        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
+        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
           {sessoes.length} Aguardando Análise
         </span>
     </div>

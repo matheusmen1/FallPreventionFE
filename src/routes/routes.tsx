@@ -14,6 +14,7 @@ import { ExecucaoSessao } from '../features/sessao/pages/ExecucaoSessao';
 import { RelatorioObservacoes } from '../features/sessao/pages/RelatorioObservacoes';
 import { MeusDados } from '../features/usuario/components/MeusDados';
 import { RelatorioGravacoes } from '../features/sessao/pages/RelatorioGravacoes';
+import { RelatorioExecucaoVR } from '../features/sessao/pages/RelatorioExecucaoVR';
 import { useState } from 'react';
 import { GerenciarDoenca } from '../features/doenca/pages/GerenciarDoenca';
 import { AtendimentoMonitor } from '../features/sessao/pages/AtendimentoMonitor';
@@ -54,6 +55,9 @@ export function AppRoutes()
           <Route path="sessao/execucao/:id" element={<ExecucaoSessao setMenuAberto={setMenuAberto} />} /> 
           <Route path="relatorio/gravacoes" element={<RelatorioGravacoes/>}></Route>
           <Route path="relatorio/observacao" element={<RelatorioObservacoes/>}></Route>
+          <Route path="relatorio/execucao" element={<RelatorioExecucaoVR/>}></Route>
+          <Route path="relatorio/sessao/:id" element={<RelatorioExecucaoVR/>}></Route>
+          <Route path="relatorios/sessao/:id" element={<RelatorioExecucaoVR/>}></Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

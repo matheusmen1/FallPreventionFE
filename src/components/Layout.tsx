@@ -215,6 +215,10 @@ export function Layout({ menuAberto }: LayoutProps) {
                 Relatórios
               </h3>
               <div className="flex flex-col gap-1">
+                <Link to="/relatorio/execucao" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors flex items-center gap-2">
+                  <ClipboardList size={18} className="text-slate-400" />
+                  Resultados
+                </Link>
                 <Link to="/relatorio/observacao" className="px-4 py-2 rounded-md hover:bg-slate-800 transition-colors flex items-center gap-2">
                   <FileText size={18} className="text-slate-400" />
                   Observações

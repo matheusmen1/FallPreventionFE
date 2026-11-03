@@ -76,7 +76,7 @@ export function FormUsuario({ onCancelar, onSalvar, usuarioParaAlterar, listaFis
 
           <div>
             <label className="block text-sm font-medium text-gray-700">RA/Matrícula</label>
-            <input type="text" required value={formData.ra} onChange={e => setFormData({...formData, ra: e.target.value})}
+            <input type="text" maxLength={9} required value={formData.ra} onChange={e => setFormData({...formData, ra: e.target.value})}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
           </div>
 
