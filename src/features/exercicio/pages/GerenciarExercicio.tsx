@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { TipoExercicio } from '../../tipoExercicio/types/tipoExercicio';
 import { tipoExercicioService } from '../../../services/tipoExercicioService';
-import { FormExercicio } from '../components/FormExercicio';
+import { FormExercicio, obterInfoDificuldade } from '../components/FormExercicio';
 import type { Exercicio } from '../types/exercicio';
 import { exercicioService } from '../../../services/exercicioService';
 
@@ -72,7 +72,7 @@ export function GerenciarExercicio()
   async function salvar(dados: FormData) 
   {
     try {
-      if (dados.get('id')) {
+      if (exercicioEdicao?.id) {
         await exercicioService.put(dados);
       } else {
         await exercicioService.add(dados);
@@ -141,21 +141,29 @@ export function GerenciarExercicio()
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Intervenção Clínica</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dificuldade</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pacote Unity</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {carregando ? (
-              <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Carregando Dados...</td></tr>
+              <tr><td colSpan={6} className="px-6 py-4 text-center text-gray-500">Carregando Dados...</td></tr>
             ) :exercicios.length === 0 ? (
-              <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Nenhuma Intervenção Clínica Encontrada.</td></tr>
+              <tr><td colSpan={6} className="px-6 py-4 text-center text-gray-500">Nenhuma Intervenção Clínica Encontrada.</td></tr>
             ) : (
-              exercicios.map((exercicio) => (
+              exercicios.map((exercicio) => {
+                const infoDif = obterInfoDificuldade(exercicio.dificuldade);
+                return (
                 <tr key={exercicio.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.descricao}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.tipo_exercicio.nome}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${infoDif.corBadge}`}>
+                      {infoDif.label}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.codigo_nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><div className="flex gap-2 justify-end">
                     <button onClick={() => onAlterar(exercicio)}  className="px-3 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all duration-100">Alterar</button>
@@ -163,7 +171,7 @@ export function GerenciarExercicio()
                     </div>
                   </td>
                 </tr>
-              ))
+              )})
             )}
           </tbody>
         </table>

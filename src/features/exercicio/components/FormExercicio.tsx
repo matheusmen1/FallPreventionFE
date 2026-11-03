@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Exercicio } from '../types/exercicio';
 import type { TipoExercicio } from '../../tipoExercicio/types/tipoExercicio';
+
 interface FormProps 
 {
   onCancelar: () => void;
@@ -9,12 +10,47 @@ interface FormProps
   listaTipoExercicio: TipoExercicio[];
 }
 
-export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, listaTipoExercicio }: FormProps) {
+export const OPCOES_DIFICULDADE = [
+  { valor: 1, label: '1 - Iniciante (28–64 pts FES-I)' },
+  { valor: 2, label: '2 - Leve (20–27 pts FES-I)' },
+  { valor: 3, label: '3 - Moderado (17–19 pts FES-I)' },
+  { valor: 4, label: '4 - Avançado (16 pts FES-I)' },
+];
+
+export function obterInfoDificuldade(dificuldade?: number) {
+  const nivel = dificuldade ?? 1;
+  switch (nivel) {
+    case 4:
+      return {
+        label: 'Avançado',
+        corBadge: 'bg-red-100 text-red-800 border-red-200',
+      };
+    case 3:
+      return {
+        label: 'Moderado',
+        corBadge: 'bg-amber-100 text-amber-800 border-amber-200',
+      };
+    case 2:
+      return {
+        label: 'Leve',
+        corBadge: 'bg-blue-100 text-blue-800 border-blue-200',
+      };
+    case 1:
+    default:
+      return {
+        label: 'Iniciante',
+        corBadge: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      };
+  }
+}
+
+export function FormExercicio({ onCancelar, onSalvar, exercicioParaAlterar, listaTipoExercicio }: FormProps) {
   const [formData, setFormData] = useState<Exercicio>({
     nome: '',
     descricao: '',
     tipo_exercicio: { id: 0, nome: '' },
-    codigo_nome: ''
+    codigo_nome: '',
+    dificuldade: 1
   });
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [fotoFile, setFotoFile] = useState<File | null>(null);
@@ -26,7 +62,7 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
 
     pacote.append(
       "exercicio", 
-      new Blob([JSON.stringify(formData)], { type: "application/json" })
+      new Blob([JSON.stringify({ ...formData, dificuldade: formData.dificuldade ?? 1 })], { type: "application/json" })
     );
 
     if (videoFile) pacote.append("video", videoFile);
@@ -36,7 +72,10 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
   };
   useEffect(() => {
     if (exercicioParaAlterar) {
-      setFormData(exercicioParaAlterar);
+      setFormData({
+        ...exercicioParaAlterar,
+        dificuldade: exercicioParaAlterar.dificuldade ?? 1
+      });
     }
   }, [exercicioParaAlterar]);
   
@@ -47,7 +86,7 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nome</label>
             <input type="text" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
@@ -87,6 +126,21 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
               </select>
             </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700">Dificuldade</label>
+            <select
+              required
+              value={formData.dificuldade ?? 1}
+              onChange={e => setFormData({ ...formData, dificuldade: Number(e.target.value) })}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none bg-blue-50"
+            >
+              {OPCOES_DIFICULDADE.map(op => (
+                <option key={op.valor} value={op.valor}>
+                  {op.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700">Foto (Opcional)</label>
             <input 
               type="file" 
@@ -95,7 +149,7 @@ export function FormExercicio({ onCancelar, onSalvar,exercicioParaAlterar, lista
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 shadow-sm focus:border-blue-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
             />
           </div>
-            <div>
+          <div>
             <label className="block text-sm font-medium text-gray-700">Vídeo (Opcional)</label>
             <input 
               type="file" 

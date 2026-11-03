@@ -6,7 +6,10 @@ import { useAuth } from '../../../contexts/AutoContext';
 import type { TipoExercicio } from '../../tipoExercicio/types/tipoExercicio';
 import { API_URL } from '../../../services/api';
 import { usuarioService } from '../../../services/usuarioService';
+import { exercicioService } from '../../../services/exercicioService';
 import type { Usuario } from '../../usuario/types/usuario';
+import { obterClassificacaoFesI } from '../../paciente/components/FormPaciente';
+import { obterInfoDificuldade } from '../../exercicio/components/FormExercicio';
 
 interface FormProps {
   onCancelar: () => void;
@@ -15,6 +18,14 @@ interface FormProps {
   listaPacientes: Paciente[];
   listaTipoExercicio: TipoExercicio[];
   listaExercicios: Exercicio[]; 
+}
+
+function obterNivelMaximoPorPontuacao(pontuacao?: number): number {
+  const pts = pontuacao ?? 16;
+  if (pts <= 16) return 4;
+  if (pts <= 19) return 3;
+  if (pts <= 27) return 2;
+  return 1;
 }
 
 export function FormSessao({ 
@@ -40,14 +51,40 @@ export function FormSessao({
     sessaoFases: [],
     observacao: ''
   });
- const [filtroTipoId, setFiltroTipoId] = useState<number | null>(null);
+  const [filtroTipoId, setFiltroTipoId] = useState<number | null>(null);
+  const [exerciciosFiltrados, setExerciciosFiltrados] = useState<Exercicio[]>([]);
+  const [exercicioEmConfiguracao, setExercicioEmConfiguracao] = useState<Exercicio | null>(null);
+  const [configTemp, setConfigTemp] = useState({ is_repeticao: false, valor: 30 });
 
-const [exercicioEmConfiguracao, setExercicioEmConfiguracao] = useState<Exercicio | null>(null);
+  useEffect(() => {
+    async function carregarExerciciosCompativeis() {
+      if (!formData.paciente) {
+        setExerciciosFiltrados([]);
+        return;
+      }
+      const pontuacaoPaciente = formData.paciente.pontuacao ?? 16;
+      try {
+        if (filtroTipoId != null) {
+          const dados = await exercicioService.getAllByPontuacaoAndTipo(pontuacaoPaciente, filtroTipoId);
+          setExerciciosFiltrados(dados);
+        } else {
+          const dados = await exercicioService.getAllByPontuacao(pontuacaoPaciente);
+          setExerciciosFiltrados(dados);
+        }
+      } catch (err) {
+        const nivelMaximo = obterNivelMaximoPorPontuacao(pontuacaoPaciente);
+        const filtradosLocal = listaExercicios.filter(ex => {
+          const dif = ex.dificuldade ?? 1;
+          const okDificuldade = dif <= nivelMaximo;
+          const okTipo = filtroTipoId ? ex.tipo_exercicio.id === filtroTipoId : true;
+          return okDificuldade && okTipo;
+        });
+        setExerciciosFiltrados(filtradosLocal);
+      }
+    }
 
-const [configTemp, setConfigTemp] = useState({ is_repeticao: false, valor: 30 });
-const exerciciosFiltrados = filtroTipoId 
-  ? listaExercicios.filter(ex => ex.tipo_exercicio.id === filtroTipoId) 
-  : listaExercicios;
+    carregarExerciciosCompativeis();
+  }, [formData.paciente, filtroTipoId, listaExercicios]);
 
   const monitoresDisponiveis = monitores.filter(monitor => monitor.id !== usuarioLogado?.id && sessaoParaAlterar?.responsavel?.id !== monitor.id);
   const montarSessaoParaSalvar = (): Sessao => ({
@@ -156,6 +193,8 @@ const exerciciosFiltrados = filtroTipoId
         setPassoAtual(prev => prev - 1);
     }
   };
+
+  const infoFesPaciente = formData.paciente ? obterClassificacaoFesI(formData.paciente.pontuacao) : null;
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
@@ -277,7 +316,15 @@ const exerciciosFiltrados = filtroTipoId
                         {formData.paciente.doenca?.nome  || 'Nenhuma'}
                       </span>
                     </div>
-                    <div>
+                    <div className="col-span-2">
+                      <span className="block text-xs text-slate-500 font-semibold mb-1">Anamnese FES-I Brasil (Preocupação com Quedas)</span>
+                      {infoFesPaciente && (
+                        <div className={`inline-block px-3 py-1.5 rounded-lg border text-xs font-bold ${infoFesPaciente.corBadge}`}>
+                          {formData.paciente.pontuacao ?? 16} pts — {infoFesPaciente.titulo} (Níveis Liberados: {infoFesPaciente.niveisLiberados})
+                        </div>
+                      )}
+                    </div>
+                    <div className="col-span-2">
                       <span className="block text-xs text-slate-500 font-semibold mb-1">Observações</span>
                       <span className="text-sm text-slate-800 font-medium">
                         {formData.paciente.observacao  || 'Nenhuma'}
@@ -294,10 +341,12 @@ const exerciciosFiltrados = filtroTipoId
               
               <div className="flex flex-col lg:flex-row gap-8">
                 <div className="flex-1 border-r border-gray-200 pr-8">
-                  <div className="flex justify-between items-end mb-6">
+                  <div className="flex flex-wrap justify-between items-end gap-4 mb-4">
                     <div>
                       <h3 className="text-xl font-semibold text-gray-800 mb-1">Catálogo de Intervenções Clínicas</h3>
-                      <p className="text-sm text-gray-500">Selecione para Configurar e Adicionar à Sessão.</p>
+                      <p className="text-sm text-gray-500">
+                        Exibindo intervenções compatíveis com o escore FES-I de <strong>{formData.paciente?.nome}</strong> ({formData.paciente?.pontuacao ?? 16} pts — {infoFesPaciente?.niveisLiberados}).
+                      </p>
                     </div>
                     
                     <div className="w-64">
@@ -315,29 +364,40 @@ const exerciciosFiltrados = filtroTipoId
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
-                    {exerciciosFiltrados.map(ex => (
-                      <div 
-                        key={ex.id} 
-                        onClick={() => {
-                          setExercicioEmConfiguracao(ex);
-                          setConfigTemp({ is_repeticao: true, valor: 5 }); 
-                        }}
-                        className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all group bg-white relative overflow-hidden"
-                      >
-                        <div className="w-full h-32 bg-gray-100 rounded-md mb-3 flex items-center justify-center text-gray-400 overflow-hidden">
-                          {ex.url_foto ? (
-                            <img src={`${API_URL}${ex.url_foto}`} alt={ex.nome} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-xs italic">Sem Imagem</span>
-                          )}
+                  {exerciciosFiltrados.length === 0 ? (
+                    <div className="p-8 text-center text-gray-400 border border-dashed border-gray-200 rounded-lg">
+                      Nenhuma intervenção clínica encontrada para o nível de preocupação deste paciente ({infoFesPaciente?.niveisLiberados}) neste filtro.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
+                      {exerciciosFiltrados.map(ex => {
+                        const infoDif = obterInfoDificuldade(ex.dificuldade);
+                        return (
+                        <div 
+                          key={ex.id} 
+                          onClick={() => {
+                            setExercicioEmConfiguracao(ex);
+                            setConfigTemp({ is_repeticao: true, valor: 5 }); 
+                          }}
+                          className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all group bg-white relative overflow-hidden"
+                        >
+                          <div className="w-full h-32 bg-gray-100 rounded-md mb-3 flex items-center justify-center text-gray-400 overflow-hidden relative">
+                            {ex.url_foto ? (
+                              <img src={`${API_URL}${ex.url_foto}`} alt={ex.nome} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-xs italic">Sem Imagem</span>
+                            )}
+                            <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[11px] font-bold border shadow-sm ${infoDif.corBadge}`}>
+                              {infoDif.label}
+                            </span>
+                          </div>
+                          <h4 className="font-bold text-gray-800 text-lg leading-tight">{ex.nome}</h4>
+                          <h3 className="text-sm text-blue-600 font-medium mt-1">{ex.tipo_exercicio.nome}</h3>
+                          <h3 className="text-sm text-gray-600 font-medium mt-1">{ex.descricao}</h3>
                         </div>
-                        <h4 className="font-bold text-gray-800 text-lg leading-tight">{ex.nome}</h4>
-                        <h3 className="text-sm text-blue-600 font-medium mt-1">{ex.tipo_exercicio.nome}</h3>
-                        <h3 className="text-sm text-gray-600 font-medium mt-1">{ex.descricao}</h3>
-                      </div>
-                    ))}
-                  </div>
+                      )})}
+                    </div>
+                  )}
                 </div>
 
                 <div className="w-full lg:w-1/3 bg-gray-50 rounded-xl p-5 border border-gray-200 flex flex-col">

@@ -6,8 +6,9 @@ export interface Paciente{
     email:string,
     data_nascimento:string,
     telefone:string,
-    cpf:string
+    cpf:string,
     doenca?: Doenca,
-    tipo_pessoa?:string
-    observacao?:string
+    tipo_pessoa?:string,
+    observacao?:string,
+    pontuacao?:number
 }

@@ -12,6 +12,16 @@ export const exercicioService =
         const response = await api.get(`/apis/exercicio/getAllByName/${nome}`);
         return response.data
     },
+    getAllByPontuacao: async (pontuacao: number): Promise<Exercicio[]> =>
+    {
+        const response = await api.get(`/apis/exercicio/getAllByPontuacao/${pontuacao}`);
+        return response.data;
+    },
+    getAllByPontuacaoAndTipo: async (pontuacao: number, tpeId: number): Promise<Exercicio[]> =>
+    {
+        const response = await api.get(`/apis/exercicio/getAllByPontuacaoAndTipo/${pontuacao}/${tpeId}`);
+        return response.data;
+    },
     add: async (dados: FormData): Promise<Exercicio> =>
     {
         const response = await api.post('/apis/exercicio', dados, {

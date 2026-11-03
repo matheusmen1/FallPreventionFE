@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Paciente } from '../types/paciente';
 import { pacienteService } from '../../../services/pacienteService';
-import { FormPaciente } from '../components/FormPaciente'; 
+import { FormPaciente, obterClassificacaoFesI } from '../components/FormPaciente'; 
 import type { Doenca } from '../../doenca/types/doenca';
 import { doencaService } from '../../../services/doencaService'
 export function GerenciarPaciente() 
@@ -143,6 +143,7 @@ export function GerenciarPaciente()
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Nascimento</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Pessoa</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FES-I (Preocupação)</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doença</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observações</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
@@ -150,27 +151,34 @@ export function GerenciarPaciente()
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {carregando ? (
-              <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Carregando Dados...</td></tr>
+              <tr><td colSpan={10} className="px-6 py-4 text-center text-gray-500">Carregando Dados...</td></tr>
             ) :pacientes.length === 0 ? (
-              <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Nenhum Paciente Encontrado.</td></tr>
+              <tr><td colSpan={10} className="px-6 py-4 text-center text-gray-500">Nenhum Paciente Encontrado.</td></tr>
             ) : (
-              pacientes.map((paciente) => (
+              pacientes.map((paciente) => {
+                const infoFes = obterClassificacaoFesI(paciente.pontuacao);
+                return (
                 <tr key={paciente.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{paciente.nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.cpf}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.telefone}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(paciente.data_nascimento).toLocaleDateString("pt-BR")}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.tipo_pessoa}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.doenca?.nome || 'Nenhuma'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.observacao || 'Nenhuma'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.telefone}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(paciente.data_nascimento).toLocaleDateString("pt-BR")}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.tipo_pessoa}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${infoFes.corBadge}`}>
+                      {paciente.pontuacao ?? 16} pts — {infoFes.titulo}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.doenca?.nome || 'Nenhuma'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.observacao || 'Nenhuma'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><div className="flex gap-2 justify-end">
                     <button onClick={() => onAlterar(paciente)}  className="px-3 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all duration-100">Alterar</button>
                     <button onClick={() => excluir(paciente)} className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 active:scale-95 transition-all duration-100">Excluir</button>
                     </div>
                   </td>
                 </tr>
-              ))
+              )})
             )}
           </tbody>
         </table>

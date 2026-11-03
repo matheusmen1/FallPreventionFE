@@ -8,4 +8,5 @@ export interface Exercicio{
     codigo_nome: string;
     url_foto?: string;
     url_video?: string;
+    dificuldade?: number;
 }
