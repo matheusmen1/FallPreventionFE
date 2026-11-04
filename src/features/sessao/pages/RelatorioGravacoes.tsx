@@ -110,7 +110,7 @@ export function RelatorioGravacoes() {
               1. Selecione o Paciente:
             </label>
             <select
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 outline-none bg-white transition-colors"
               value={pacienteSelecionado}
               onChange={(e) => {
                 const pacienteId = e.target.value === '' ? '' : Number(e.target.value);
@@ -146,7 +146,7 @@ export function RelatorioGravacoes() {
                   setGravacoes([]);
                 }
               }}
-              disabled={carregando}
+              disabled={carregando || pacienteSelecionado === ''}
             >
               <option value="">
                 {pacienteSelecionado === '' 
@@ -170,7 +170,6 @@ export function RelatorioGravacoes() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Data / Hora 
               </th>
@@ -188,7 +187,7 @@ export function RelatorioGravacoes() {
               </tr>
             ) : sessaoSelecionada === '' ? (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-400">
                   Selecione um Paciente e uma Sessão para Visualizar as Gravações.
                 </td>
               </tr>

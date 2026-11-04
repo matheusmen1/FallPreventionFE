@@ -180,7 +180,11 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
     }
   }
   async function onRecentralizar() {
-
+    try{
+      await sessaoService.recentralizar();
+    }catch(error){
+      console.log("Erro ao Recentralizar: ", error)
+    }
   }
   async function onAddObservacao() {
     try {

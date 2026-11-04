@@ -11,10 +11,10 @@ interface FormProps
 }
 
 export const OPCOES_DIFICULDADE = [
-  { valor: 1, label: '1 - Iniciante (28–64 pts FES-I)' },
-  { valor: 2, label: '2 - Leve (20–27 pts FES-I)' },
-  { valor: 3, label: '3 - Moderado (17–19 pts FES-I)' },
-  { valor: 4, label: '4 - Avançado (16 pts FES-I)' },
+  { valor: 1, label: 'Iniciante (28–64 Pontos FES-I)' },
+  { valor: 2, label: 'Leve (20–27 Pontos FES-I)' },
+  { valor: 3, label: 'Moderado (17–19 Pontos FES-I)' },
+  { valor: 4, label: 'Avançado (16 Pontos FES-I)' },
 ];
 
 export function obterInfoDificuldade(dificuldade?: number) {

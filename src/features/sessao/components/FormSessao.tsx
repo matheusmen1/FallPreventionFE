@@ -317,10 +317,10 @@ export function FormSessao({
                       </span>
                     </div>
                     <div className="col-span-2">
-                      <span className="block text-xs text-slate-500 font-semibold mb-1">Anamnese FES-I Brasil (Preocupação com Quedas)</span>
+                      <span className="block text-xs text-slate-500 font-semibold mb-1">Anamnese FES-I Brasil</span>
                       {infoFesPaciente && (
                         <div className={`inline-block px-3 py-1.5 rounded-lg border text-xs font-bold ${infoFesPaciente.corBadge}`}>
-                          {formData.paciente.pontuacao ?? 16} pts — {infoFesPaciente.titulo} (Níveis Liberados: {infoFesPaciente.niveisLiberados})
+                          {formData.paciente.pontuacao ?? 16} Pontos — {infoFesPaciente.titulo}
                         </div>
                       )}
                     </div>
@@ -345,7 +345,7 @@ export function FormSessao({
                     <div>
                       <h3 className="text-xl font-semibold text-gray-800 mb-1">Catálogo de Intervenções Clínicas</h3>
                       <p className="text-sm text-gray-500">
-                        Exibindo intervenções compatíveis com o escore FES-I de <strong>{formData.paciente?.nome}</strong> ({formData.paciente?.pontuacao ?? 16} pts — {infoFesPaciente?.niveisLiberados}).
+                        Exibindo Intervenções Compatíveis com a Pontuação FES-I de <strong>{formData.paciente?.nome}</strong> ({formData.paciente?.pontuacao ?? 16} Pontos).
                       </p>
                     </div>
                     
@@ -366,7 +366,7 @@ export function FormSessao({
                   
                   {exerciciosFiltrados.length === 0 ? (
                     <div className="p-8 text-center text-gray-400 border border-dashed border-gray-200 rounded-lg">
-                      Nenhuma intervenção clínica encontrada para o nível de preocupação deste paciente ({infoFesPaciente?.niveisLiberados}) neste filtro.
+                      Nenhuma Intervenção Clínica Encontrada para o Nível de Preocupação Deste Paciente Neste Filtro.
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">

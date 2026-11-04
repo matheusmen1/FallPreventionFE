@@ -115,5 +115,8 @@ export const sessaoService = {
     getAllSessoesAutorizadasByMonitor: async (monitorId: number, status: string): Promise<Sessao[]> => {
         const response = await api.get(`/apis/sessao/getAllSessoesAutorizadasByMonitor/${monitorId}/${status}`);
         return response.data;
+    },
+    recentralizar: async (): Promise<void> => {
+        await api.put(`/apis/sessao/recentralizar`);
     }
 }

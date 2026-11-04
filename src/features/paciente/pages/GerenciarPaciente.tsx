@@ -133,7 +133,7 @@ export function GerenciarPaciente()
           className="w-full sm:w-1/3 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
-      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+      <div className="bg-white rounded-lg shadow overflow-x-auto border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -142,8 +142,7 @@ export function GerenciarPaciente()
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Nascimento</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Pessoa</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FES-I (Preocupação)</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FES-I</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doença</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observações</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
@@ -164,10 +163,9 @@ export function GerenciarPaciente()
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.telefone}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(paciente.data_nascimento).toLocaleDateString("pt-BR")}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.tipo_pessoa}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${infoFes.corBadge}`}>
-                      {paciente.pontuacao ?? 16} pts — {infoFes.titulo}
+                      {paciente.pontuacao ?? 16} Pontos — {infoFes.titulo}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.doenca?.nome || 'Nenhuma'}</td>

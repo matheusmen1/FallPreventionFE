@@ -125,7 +125,7 @@ export function RelatorioObservacoes()
                 carregarObservacoesBySessaoIdAndPacienteId(Number(e.target.value), pacienteSelecionado as number);
               }
             }}
-            disabled={carregando}
+            disabled={carregando || pacienteSelecionado === ''}
           >
             <option value="">
               {pacienteSelecionado === '' 
@@ -144,14 +144,8 @@ export function RelatorioObservacoes()
       </div>
     </div>
 
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden min-h-[300px]">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden p-6">
       
-      <div className="bg-slate-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-          {sessaoSelecionada ? '' : 'Observações da Sessão'}
-        </h2>
-      </div>
-
       <div className="p-6 flex-1 bg-white">
         {carregandoTabela ? (
           <div className="h-full flex items-center justify-center text-gray-500 font-medium animate-pulse">
@@ -160,7 +154,7 @@ export function RelatorioObservacoes()
         ) : sessaoSelecionada === '' ? (
           <div className="h-full flex flex-col items-center justify-center text-gray-400">
             
-            <p>Selecione uma Sessão Acima Para ver o Relatório.</p>
+            <p>Selecione um Paciente e uma Sessão Acima para Visualizar o Relatório.</p>
           </div>
         ) : observacoes.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-gray-400">

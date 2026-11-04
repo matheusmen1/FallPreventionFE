@@ -221,11 +221,6 @@ export function RelatorioExecucaoVR() {
     (acc, f) => acc + (f.escala?.pontuacao ?? 0),
     0
   );
-  const maximoPontosFasesAvaliadas = fasesAvaliadas.length * 4;
-  const escoreProporcional56 =
-    maximoPontosFasesAvaliadas > 0
-      ? Math.round((somaPontosObtidos / maximoPontosFasesAvaliadas) * 56)
-      : 0;
 
   function obterClassificacaoBerg(escore56: number, temAvaliacao: boolean) {
     if (!temAvaliacao) {
@@ -253,7 +248,7 @@ export function RelatorioExecucaoVR() {
   }
 
   const classificacao = obterClassificacaoBerg(
-    escoreProporcional56,
+    somaPontosObtidos,
     fasesAvaliadas.length > 0
   );
 
@@ -288,14 +283,14 @@ export function RelatorioExecucaoVR() {
       </div>
 
       {(!id || isSessaoConcluida) && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 1. Selecione o Paciente:
               </label>
               <select
-                className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white transition-colors"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white transition-colors"
                 value={pacienteSelecionado}
                 onChange={(e) =>
                   handleSelecionarPaciente(
@@ -500,7 +495,7 @@ export function RelatorioExecucaoVR() {
                             : "Tempo Realizado"}
                         </p>
                         <p className="text-lg font-bold text-emerald-700">
-                          {faseDoPassoAtual.tempoRealizado ?? 0}s
+                          {Number(faseDoPassoAtual.tempoRealizado ?? 0).toFixed(2)}s
                         </p>
                       </div>
                       <div className="bg-white p-3 rounded border border-gray-200">
@@ -595,15 +590,11 @@ export function RelatorioExecucaoVR() {
                 <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      Escore Proporcional Calculado (Base 56 pts)
+                      Escore da Escala de Berg (Máx. 56 pts)
                     </p>
                     <div className="flex items-baseline gap-2 mt-1">
                       <span className="text-2xl font-bold text-indigo-700">
-                        {escoreProporcional56} / 56 pontos
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        ({somaPontosObtidos} de {maximoPontosFasesAvaliadas} pts
-                        nas {fasesAvaliadas.length} fases avaliadas)
+                        {somaPontosObtidos} / 56 pontos
                       </span>
                     </div>
                   </div>
@@ -617,7 +608,7 @@ export function RelatorioExecucaoVR() {
 
                 <div className="space-y-2">
                   <h4 className="text-sm font-bold text-gray-700">
-                    Pontuação Atribuídas por Intervenção:
+                    Pontuação Atribuída por Intervenção:
                   </h4>
                   <div className="divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden">
                     {relatorio.fases.map((f) => (
@@ -758,17 +749,12 @@ export function RelatorioExecucaoVR() {
                       </div>
                       <div>
                         <p className="text-xs font-medium text-gray-500">
-                          Escore Proporcional de Berg (Base 56 pts)
+                          Escala de Berg
                         </p>
                         <div className="flex items-baseline gap-2">
                           <p className="text-xl font-bold text-indigo-700">
-                            {escoreProporcional56} / 56 pts
+                            {somaPontosObtidos} / 56 Pontos
                           </p>
-                          <span className="text-xs text-gray-500">
-                            ({somaPontosObtidos} de {maximoPontosFasesAvaliadas}{" "}
-                            pts em {fasesAvaliadas.length}/
-                            {relatorio.fases.length} fases)
-                          </span>
                         </div>
                       </div>
                     </div>

@@ -30,10 +30,10 @@ export const PERGUNTAS_FES_I = [
 ];
 
 export const OPCOES_RESPOSTA_FES_I = [
-  { valor: 1, label: "1 - Nem um pouco preocupado" },
-  { valor: 2, label: "2 - Um pouco preocupado" },
-  { valor: 3, label: "3 - Moderadamente preocupado" },
-  { valor: 4, label: "4 - Muito preocupado" }
+  { valor: 1, label: "1 - Nem um Pouco Preocupado" },
+  { valor: 2, label: "2 - Um Pouco Preocupado" },
+  { valor: 3, label: "3 - Moderadamente Preocupado" },
+  { valor: 4, label: "4 - Muito Preocupado" }
 ];
 
 export function obterClassificacaoFesI(pontuacao?: number) {
@@ -42,7 +42,6 @@ export function obterClassificacaoFesI(pontuacao?: number) {
     return {
       titulo: "Ausência de Preocupação",
       faixa: "16 pontos",
-      niveisLiberados: "Iniciante, Leve, Moderado e Avançado",
       corBadge: "bg-emerald-100 text-emerald-800 border-emerald-200"
     };
   }
@@ -50,7 +49,6 @@ export function obterClassificacaoFesI(pontuacao?: number) {
     return {
       titulo: "Baixa Preocupação",
       faixa: "17–19 pontos",
-      niveisLiberados: "Iniciante, Leve e Moderado",
       corBadge: "bg-blue-100 text-blue-800 border-blue-200"
     };
   }
@@ -58,14 +56,12 @@ export function obterClassificacaoFesI(pontuacao?: number) {
     return {
       titulo: "Preocupação Moderada",
       faixa: "20–27 pontos",
-      niveisLiberados: "Iniciante e Leve",
       corBadge: "bg-amber-100 text-amber-800 border-amber-200"
     };
   }
   return {
     titulo: "Alta Preocupação com Quedas",
     faixa: "28–64 pontos",
-    niveisLiberados: "Iniciante",
     corBadge: "bg-red-100 text-red-800 border-red-200"
   };
 }
@@ -239,7 +235,7 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
               </button>
               <button type="submit"
                 className="rounded-md bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
-                Próximo: Questionário FES-I →
+                Questionário FES-I
               </button>
             </div>
           </form>
@@ -251,7 +247,7 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
                   FES-I Brasil — Escala de Eficácia de Quedas Internacional
                 </h3>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Avalie a preocupação do paciente ({formData.nome}) em cair durante cada uma das 16 atividades da vida diária abaixo.
+                  Avalie a Preocupação do Paciente {formData.nome} em Cair Durante Cada uma das 16 Atividades da Vida Diária Abaixo.
                 </p>
               </div>
 
@@ -261,14 +257,11 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
                     Pontuação Total
                   </span>
                   <span className="text-2xl font-black text-blue-700">
-                    {pontuacaoCalculada} <span className="text-xs font-normal text-gray-500">/ 64 pts</span>
+                    {pontuacaoCalculada} <span className="text-xs font-normal text-gray-500">/ 64 Pontos</span>
                   </span>
                 </div>
                 <div className={`px-3 py-1.5 rounded-lg border text-xs font-bold ${classificacao.corBadge}`}>
                   <div>{classificacao.titulo} ({classificacao.faixa})</div>
-                  <div className="font-normal text-[11px]">
-                    Níveis liberados: <strong>{classificacao.niveisLiberados}</strong>
-                  </div>
                 </div>
               </div>
             </div>
@@ -300,13 +293,13 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
                 onClick={() => setPassoAtual(1)}
                 className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                ← Voltar aos Dados
+                Voltar
               </button>
               <button
                 type="submit"
                 className="rounded-md bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 shadow transition-colors"
               >
-                Confirmar Cadastro ({pontuacaoCalculada} pts)
+                Confirmar
               </button>
             </div>
           </form>

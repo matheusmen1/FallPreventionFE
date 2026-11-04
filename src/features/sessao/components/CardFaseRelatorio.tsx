@@ -341,7 +341,7 @@ export function CardFaseRelatorio({
                   {fase.isRepeticao ? "Tempo que Demorou" : "Tempo Realizado"}
                 </p>
                 <p className="text-lg font-bold text-emerald-700">
-                  {fase.tempoRealizado ?? 0}s
+                  {Number(fase.tempoRealizado ?? 0).toFixed(2)}s
                 </p>
               </div>
               <div className="bg-white p-3 rounded border border-gray-200">
