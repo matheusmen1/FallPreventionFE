@@ -36,7 +36,7 @@ export interface ItemEscalaBerg {
 
 export const CATALOGO_ESCALA_BERG: ItemEscalaBerg[] = [
   {
-    titulo: "Não Se Aplica",
+    titulo: "Não se Aplica",
     opcoes: [
       { valor: 4, descricao: "(4) Realiza a tarefa com total independência e segurança" },
       { valor: 3, descricao: "(3) Realiza a tarefa com independência, mas com leve adaptação ou supervisão" },
@@ -201,16 +201,40 @@ export function encontrarItemCatalogo(itemSalvo?: string): ItemEscalaBerg {
   return CATALOGO_ESCALA_BERG[0];
 }
 
+export function verificarExercicioNaoExecutado(fase: RelatorioFaseDTO): boolean {
+  const rep = fase.repeticoesRealizadas ?? 0;
+  const tempo = Number(fase.tempoRealizado ?? 0);
+
+  if (rep === 0 && tempo === 0) {
+    return true;
+  }
+
+  if (rep === 5 && tempo === 30) {
+    return true;
+  }
+
+  if (!fase.isRepeticao && rep === 30 && tempo === Number(fase.metaTempo ?? 0)) {
+    return true;
+  }
+
+  if (fase.isRepeticao && tempo === 5 && rep === (fase.metaRepeticoes ?? 0)) {
+    return true;
+  }
+
+  return false;
+}
+
 export function CardFaseRelatorio({
   fase,
   somenteLeitura = false,
   onEscalaAtualizada,
 }: CardFaseRelatorioProps) {
+  const naoExecutado = verificarExercicioNaoExecutado(fase);
   const [itemAvaliado, setItemAvaliado] = useState<string>(
     encontrarItemCatalogo(fase.escala?.itemAvaliado).titulo
   );
   const [pontuacao, setPontuacao] = useState<number>(
-    fase.escala?.pontuacao ?? 4
+    fase.escala?.pontuacao ?? (naoExecutado ? 0 : 4)
   );
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -222,8 +246,9 @@ export function CardFaseRelatorio({
   );
 
   useEffect(() => {
+    const faseNaoExecutada = verificarExercicioNaoExecutado(fase);
     setItemAvaliado(encontrarItemCatalogo(fase.escala?.itemAvaliado).titulo);
-    setPontuacao(fase.escala?.pontuacao ?? 4);
+    setPontuacao(fase.escala?.pontuacao ?? (faseNaoExecutada ? 0 : 4));
     setErro(null);
     setMensagemSucesso(null);
   }, [fase]);
@@ -269,7 +294,7 @@ export function CardFaseRelatorio({
   const textoObservacaoFase =
     fase.observacaoFase ||
     fase.escala?.justificativa ||
-    "Nenhuma Observação Registrada Para Esta Intervenção.";
+    "Nenhuma Observação Registrada Para Este Exercício.";
 
   const mediaSegPorRep =
     fase.repeticoesRealizadas &&
@@ -284,7 +309,7 @@ export function CardFaseRelatorio({
       <div className="bg-slate-50 px-6 py-3.5 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="px-2.5 py-1 rounded-md bg-blue-600 text-white font-semibold text-xs">
-            {fase.ordem}ª Intervenção
+            {fase.ordem}ª Exercício
           </span>
           <h3 className="text-base font-bold text-gray-800">
             {fase.exercicioNome}
@@ -327,30 +352,37 @@ export function CardFaseRelatorio({
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5 mb-3">
               <Activity size={14} /> Executado no Ambiente Virtual
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {naoExecutado ? (
               <div className="bg-white p-3 rounded border border-gray-200">
-                <p className="text-xs text-gray-500">
-                  {fase.isRepeticao ? "Repetições Realizadas" : "Repetições no Tempo"}
-                </p>
-                <p className="text-lg font-bold text-emerald-700">
-                  {fase.repeticoesRealizadas ?? 0} Repetições
-                </p>
+                <p className="text-xs text-gray-500">Execução no Ambiente Virtual</p>
+                <p className="text-lg font-bold text-gray-500">Não se Aplica</p>
               </div>
-              <div className="bg-white p-3 rounded border border-gray-200">
-                <p className="text-xs text-gray-500">
-                  {fase.isRepeticao ? "Tempo que Demorou" : "Tempo Realizado"}
-                </p>
-                <p className="text-lg font-bold text-emerald-700">
-                  {Number(fase.tempoRealizado ?? 0).toFixed(2)}s
-                </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="bg-white p-3 rounded border border-gray-200">
+                  <p className="text-xs text-gray-500">
+                    {fase.isRepeticao ? "Repetições Realizadas" : "Repetições no Tempo"}
+                  </p>
+                  <p className="text-lg font-bold text-emerald-700">
+                    {fase.repeticoesRealizadas ?? 0} Repetições
+                  </p>
+                </div>
+                <div className="bg-white p-3 rounded border border-gray-200">
+                  <p className="text-xs text-gray-500">
+                    {fase.isRepeticao ? "Tempo que Demorou" : "Tempo Realizado"}
+                  </p>
+                  <p className="text-lg font-bold text-emerald-700">
+                    {Number(fase.tempoRealizado ?? 0).toFixed(2)}s
+                  </p>
+                </div>
+                <div className="bg-white p-3 rounded border border-gray-200">
+                  <p className="text-xs text-gray-500">Média por Repetição</p>
+                  <p className="text-lg font-bold text-emerald-700">
+                    {mediaSegPorRep ? `${mediaSegPorRep}s / rep` : "-"}
+                  </p>
+                </div>
               </div>
-              <div className="bg-white p-3 rounded border border-gray-200">
-                <p className="text-xs text-gray-500">Média por Repetição</p>
-                <p className="text-lg font-bold text-emerald-700">
-                  {mediaSegPorRep ? `${mediaSegPorRep}s / rep` : "-"}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -410,7 +442,7 @@ export function CardFaseRelatorio({
               >
                 <div className="md:col-span-5">
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Item da Escala de Berg
+                    Item da Escala de Berg <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={itemAvaliado}
@@ -427,7 +459,7 @@ export function CardFaseRelatorio({
 
                 <div className="md:col-span-5">
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Pontuação (0 a 4)
+                    Pontuação (0 a 4) <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={pontuacao}

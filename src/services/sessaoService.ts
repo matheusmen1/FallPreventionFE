@@ -118,5 +118,8 @@ export const sessaoService = {
     },
     recentralizar: async (): Promise<void> => {
         await api.put(`/apis/sessao/recentralizar`);
+    },
+    finalizarSessao: async (sessaoId: number): Promise<void> => {
+        await api.put(`/apis/sessao/finalizar/${sessaoId}`);
     }
 }

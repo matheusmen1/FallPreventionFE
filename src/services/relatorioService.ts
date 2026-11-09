@@ -24,11 +24,12 @@ export const relatorioService = {
 
   concluirSessao: async (
     sesId: number,
-    observacao?: string
+    observacao?: string,
+    usuarioId?: number
   ): Promise<RelatorioSessaoDTO> => {
     const response = await api.post<RelatorioSessaoDTO>(
       `/api/relatorios/sessao/${sesId}/concluir`,
-      { observacao }
+      { observacao, usuarioId }
     );
     return response.data;
   },

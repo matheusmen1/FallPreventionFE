@@ -22,16 +22,19 @@ import { relatorioService } from "../../../services/relatorioService";
 import { pacienteService } from "../../../services/pacienteService";
 import { sessaoService } from "../../../services/sessaoService";
 import { useSessao } from "../../../contexts/SessaoContext";
+import { useAuth } from "../../../contexts/AutoContext";
 import {
   CardFaseRelatorio,
   CATALOGO_ESCALA_BERG,
   encontrarItemCatalogo,
+  verificarExercicioNaoExecutado,
 } from "../components/CardFaseRelatorio";
 
 export function RelatorioExecucaoVR() {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
   const { atualizarSessoes, carregarSessoesAprovadas } = useSessao();
+  const { usuarioLogado } = useAuth();
 
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [sessoesPaciente, setSessoesPaciente] = useState<Sessao[]>([]);
@@ -46,10 +49,15 @@ export function RelatorioExecucaoVR() {
   const [erro, setErro] = useState<string | null>(null);
 
   const [passoAtual, setPassoAtual] = useState<number>(1);
-  const [itemBergPasso, setItemBergPasso] = useState<string>("Não se Aplica");
+  const [itemBergPasso, setItemBergPasso] = useState<string>("Não Se Aplica");
   const [pontuacaoPasso, setPontuacaoPasso] = useState<number>(4);
   const [observacaoGeralFinal, setObservacaoGeralFinal] = useState<string>("");
   const [salvandoPasso, setSalvandoPasso] = useState<boolean>(false);
+
+  const [isModalObservacaoAberto, setIsModalObservacaoAberto] = useState<boolean>(false);
+  const [novaObservacaoFase, setNovaObservacaoFase] = useState<string>("");
+  const [salvandoObservacaoFase, setSalvandoObservacaoFase] = useState<boolean>(false);
+  const [ultimasObservacoesSessao, setUltimasObservacoesSessao] = useState<string>("");
 
   useEffect(() => {
     carregarPacientes();
@@ -68,10 +76,13 @@ export function RelatorioExecucaoVR() {
     const idxFase = passoAtual - 1;
     if (idxFase >= 0 && idxFase < relatorio.fases.length) {
       const faseAtual = relatorio.fases[idxFase];
+      const naoExecutado = verificarExercicioNaoExecutado(faseAtual);
       setItemBergPasso(
         encontrarItemCatalogo(faseAtual.escala?.itemAvaliado).titulo
       );
-      setPontuacaoPasso(faseAtual.escala?.pontuacao ?? 4);
+      setPontuacaoPasso(
+        faseAtual.escala?.pontuacao ?? (naoExecutado ? 0 : 4)
+      );
     }
   }, [passoAtual, relatorio]);
 
@@ -178,7 +189,8 @@ export function RelatorioExecucaoVR() {
       setErro(null);
       const relatorioConcluido = await relatorioService.concluirSessao(
         relatorio.sessaoId,
-        observacaoGeralFinal
+        observacaoGeralFinal,
+        usuarioLogado?.id
       );
       setRelatorio(relatorioConcluido);
       try {
@@ -192,6 +204,48 @@ export function RelatorioExecucaoVR() {
       );
     } finally {
       setSalvandoPasso(false);
+    }
+  }
+
+  async function abrirModalObservacao() {
+    setNovaObservacaoFase("");
+    setIsModalObservacaoAberto(true);
+    if (!relatorio) return;
+    try {
+      const dado = await sessaoService.getSessaoObservacaoById(relatorio.sessaoId);
+      setUltimasObservacoesSessao(dado?.observacao || "");
+    } catch {
+      setUltimasObservacoesSessao("");
+    }
+  }
+
+  async function handleAdicionarObservacaoFase() {
+    if (!relatorio || !faseDoPassoAtual || !novaObservacaoFase.trim()) return;
+    try {
+      setSalvandoObservacaoFase(true);
+      await sessaoService.addObservacao(
+        {
+          observacao: novaObservacaoFase.trim(),
+          sessaoFase: {
+            id: faseDoPassoAtual.sessaoFaseId,
+            is_repeticao: Boolean(faseDoPassoAtual.isRepeticao),
+            exercicio: {
+              nome: faseDoPassoAtual.exercicioNome,
+            },
+          } as any,
+        },
+        relatorio.sessaoId
+      );
+      const dadosAtualizados = await relatorioService.getRelatorioPorSessao(
+        relatorio.sessaoId
+      );
+      setRelatorio(dadosAtualizados);
+      setNovaObservacaoFase("");
+      setIsModalObservacaoAberto(false);
+    } catch (e) {
+      console.error("Erro ao salvar observação:", e);
+    } finally {
+      setSalvandoObservacaoFase(false);
     }
   }
 
@@ -215,6 +269,9 @@ export function RelatorioExecucaoVR() {
     });
   }
 
+  const totalExercicios = relatorio?.fases.length ?? 0;
+  const pontuacaoMaxima = totalExercicios * 4;
+
   const fasesAvaliadas =
     relatorio?.fases.filter((f) => f.escala != null) ?? [];
   const somaPontosObtidos = fasesAvaliadas.reduce(
@@ -222,33 +279,50 @@ export function RelatorioExecucaoVR() {
     0
   );
 
-  function obterClassificacaoBerg(escore56: number, temAvaliacao: boolean) {
-    if (!temAvaliacao) {
+  function obterClassificacaoBerg(
+    pontos: number,
+    maximo: number,
+    temAvaliacao: boolean
+  ) {
+    if (!temAvaliacao || maximo === 0) {
       return {
-        texto: "Aguardando Avaliação das Intervenções",
+        texto: "Aguardando Avaliação dos Exercícios",
         corClasses: "bg-gray-100 text-gray-600 border-gray-200",
       };
     }
-    if (escore56 <= 20) {
+
+    const corteGrave = Math.max(1, Math.round((20 / 56) * maximo));
+    const corteModerado = Math.min(
+      maximo - 1,
+      Math.max(corteGrave + 1, Math.round((40 / 56) * maximo))
+    );
+
+    if (pontos <= corteGrave) {
       return {
-        texto: "0 a 20 Pontos: Comprometimento Grave do Equilíbrio (Risco Alto de Quedas)",
+        texto: `0 a ${corteGrave} Pontos: Comprometimento Grave do Equilíbrio (Risco Alto de Quedas)`,
         corClasses: "bg-red-100 text-red-800 border-red-200",
       };
     }
-    if (escore56 <= 40) {
+    if (pontos <= corteModerado) {
       return {
-        texto: "21 a 40 Pontos: Equilíbrio Aceitável",
+        texto: `${corteGrave + 1} a ${corteModerado} Pontos: Equilíbrio Aceitável`,
         corClasses: "bg-amber-100 text-amber-800 border-amber-200",
       };
     }
+    const faixaBom =
+      corteModerado + 1 >= maximo
+        ? `${maximo} Pontos`
+        : `${corteModerado + 1} a ${maximo} Pontos`;
+
     return {
-      texto: "41 a 56 Pontos: Bom Equilíbrio",
+      texto: `${faixaBom}: Bom Equilíbrio`,
       corClasses: "bg-emerald-100 text-emerald-800 border-emerald-200",
     };
   }
 
   const classificacao = obterClassificacaoBerg(
     somaPontosObtidos,
+    pontuacaoMaxima,
     fasesAvaliadas.length > 0
   );
 
@@ -278,7 +352,7 @@ export function RelatorioExecucaoVR() {
         <h1 className="text-2xl font-bold text-gray-800">
           {relatorio && !isSessaoConcluida
             ? "Finalizar Sessão"
-            : "Relatório de Avaliação Clínica"}
+            : "Relatório de Resultados da Sessão"}
         </h1>
       </div>
 
@@ -386,7 +460,7 @@ export function RelatorioExecucaoVR() {
                         {numPasso}
                       </div>
                       <span className="ml-1.5 font-medium text-xs hidden md:inline">
-                        {f.ordem}ª Intervenção
+                        {f.ordem}º Exercício
                       </span>
                     </div>
                     <div
@@ -427,7 +501,7 @@ export function RelatorioExecucaoVR() {
                 <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-4">
                   <div className="flex items-center gap-3">
                     <span className="px-3 py-1 rounded-md bg-blue-600 text-white font-bold text-sm">
-                      {faseDoPassoAtual.ordem}ª Intervenção
+                      {faseDoPassoAtual.ordem}º Exercício
                     </span>
                     <div>
                       <h3 className="text-xl font-bold text-gray-800">
@@ -477,55 +551,75 @@ export function RelatorioExecucaoVR() {
                     <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5 mb-3">
                       <Activity size={14} /> Executado no Ambiente Virtual
                     </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {verificarExercicioNaoExecutado(faseDoPassoAtual) ? (
                       <div className="bg-white p-3 rounded border border-gray-200">
                         <p className="text-xs text-gray-500">
-                          {faseDoPassoAtual.isRepeticao
-                            ? "Repetições Realizadas"
-                            : "Repetições no Tempo"}
+                          Execução no Ambiente Virtual
                         </p>
-                        <p className="text-lg font-bold text-emerald-700">
-                          {faseDoPassoAtual.repeticoesRealizadas ?? 0} Repetições
+                        <p className="text-lg font-bold text-gray-500">
+                          Não se Aplica
                         </p>
                       </div>
-                      <div className="bg-white p-3 rounded border border-gray-200">
-                        <p className="text-xs text-gray-500">
-                          {faseDoPassoAtual.isRepeticao
-                            ? "Tempo que Demorou"
-                            : "Tempo Realizado"}
-                        </p>
-                        <p className="text-lg font-bold text-emerald-700">
-                          {Number(faseDoPassoAtual.tempoRealizado ?? 0).toFixed(2)}s
-                        </p>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="bg-white p-3 rounded border border-gray-200">
+                          <p className="text-xs text-gray-500">
+                            {faseDoPassoAtual.isRepeticao
+                              ? "Repetições Realizadas"
+                              : "Repetições no Tempo"}
+                          </p>
+                          <p className="text-lg font-bold text-emerald-700">
+                            {faseDoPassoAtual.repeticoesRealizadas ?? 0} Repetições
+                          </p>
+                        </div>
+                        <div className="bg-white p-3 rounded border border-gray-200">
+                          <p className="text-xs text-gray-500">
+                            {faseDoPassoAtual.isRepeticao
+                              ? "Tempo que Demorou"
+                              : "Tempo Realizado"}
+                          </p>
+                          <p className="text-lg font-bold text-emerald-700">
+                            {Number(faseDoPassoAtual.tempoRealizado ?? 0).toFixed(2)}s
+                          </p>
+                        </div>
+                        <div className="bg-white p-3 rounded border border-gray-200">
+                          <p className="text-xs text-gray-500">
+                            Média por Repetição
+                          </p>
+                          <p className="text-lg font-bold text-emerald-700">
+                            {faseDoPassoAtual.repeticoesRealizadas &&
+                            faseDoPassoAtual.repeticoesRealizadas > 0 &&
+                            faseDoPassoAtual.tempoRealizado
+                              ? `${(
+                                  faseDoPassoAtual.tempoRealizado /
+                                  faseDoPassoAtual.repeticoesRealizadas
+                                ).toFixed(1)}s / rep`
+                              : "-"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="bg-white p-3 rounded border border-gray-200">
-                        <p className="text-xs text-gray-500">
-                          Média por Repetição
-                        </p>
-                        <p className="text-lg font-bold text-emerald-700">
-                          {faseDoPassoAtual.repeticoesRealizadas &&
-                          faseDoPassoAtual.repeticoesRealizadas > 0 &&
-                          faseDoPassoAtual.tempoRealizado
-                            ? `${(
-                                faseDoPassoAtual.tempoRealizado /
-                                faseDoPassoAtual.repeticoesRealizadas
-                              ).toFixed(1)}s / rep`
-                            : "-"}
-                        </p>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="bg-slate-50 rounded-lg p-4 border border-gray-200">
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
-                    <FileText size={14} className="text-blue-600" />
-                    Observação da Intervenção
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-600">
+                      <FileText size={14} className="text-blue-600" />
+                      Observação do Exercício
+                    </div>
+                    <button
+                      type="button"
+                      onClick={abrirModalObservacao}
+                      className="px-3 py-1.5 text-xs font-bold border border-slate-300 rounded-lg bg-white text-slate-700 hover:bg-slate-100 transition-all cursor-pointer shadow-sm"
+                    >
+                      + Adicionar Observação
+                    </button>
                   </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
                     {faseDoPassoAtual.observacaoFase ||
                       faseDoPassoAtual.escala?.justificativa ||
-                      "Nenhuma Observação Registrada Para Esta Intervenção."}
+                      "Nenhuma Observação Registrada Para Este Exercício."}
                   </p>
                 </div>
 
@@ -590,11 +684,11 @@ export function RelatorioExecucaoVR() {
                 <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      Escore da Escala de Berg (Máx. 56 pts)
+                      Escala de Berg
                     </p>
                     <div className="flex items-baseline gap-2 mt-1">
                       <span className="text-2xl font-bold text-indigo-700">
-                        {somaPontosObtidos} / 56 pontos
+                        {somaPontosObtidos} / {pontuacaoMaxima} Pontos
                       </span>
                     </div>
                   </div>
@@ -608,7 +702,7 @@ export function RelatorioExecucaoVR() {
 
                 <div className="space-y-2">
                   <h4 className="text-sm font-bold text-gray-700">
-                    Pontuação Atribuída por Intervenção:
+                    Pontuação Atribuída por Exercício:
                   </h4>
                   <div className="divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden">
                     {relatorio.fases.map((f) => (
@@ -669,7 +763,7 @@ export function RelatorioExecucaoVR() {
                     onClick={handleAvancarPassoFase}
                     className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 shadow-md transition-all cursor-pointer disabled:bg-blue-400"
                   >
-                    {salvandoPasso ? "Salvando..." : "Próxima Intervenção →"}
+                    {salvandoPasso ? "Salvando..." : "Próximo Exercício →"}
                   </button>
                 ) : (
                   <button
@@ -711,7 +805,9 @@ export function RelatorioExecucaoVR() {
                       Responsável Pela Sessão
                     </span>
                     <span className="font-bold text-sm">
-                      {relatorio.fisioterapeutaNome || "Não Informado"}
+                      {relatorio.usuarioExecutorNome ||
+                        relatorio.fisioterapeutaNome ||
+                        "Não Informado"}
                     </span>
                   </div>
                 </div>
@@ -753,7 +849,7 @@ export function RelatorioExecucaoVR() {
                         </p>
                         <div className="flex items-baseline gap-2">
                           <p className="text-xl font-bold text-indigo-700">
-                            {somaPontosObtidos} / 56 Pontos
+                            {somaPontosObtidos} / {pontuacaoMaxima} Pontos
                           </p>
                         </div>
                       </div>
@@ -785,7 +881,7 @@ export function RelatorioExecucaoVR() {
 
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-gray-800">
-              Intervenções da Sessão ({relatorio.fases.length})
+              Exercícios da Sessão ({relatorio.fases.length})
             </h2>
 
             {relatorio.fases.length === 0 ? (
@@ -806,6 +902,73 @@ export function RelatorioExecucaoVR() {
             )}
           </div>
         </>
+      )}
+
+      {isModalObservacaoAberto && faseDoPassoAtual && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[600px] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 bg-slate-50 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                Nova Observação — {faseDoPassoAtual.exercicioNome}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsModalObservacaoAberto(false)}
+                className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Observação <span className="text-red-500">*</span>
+              </label>
+
+              <textarea
+                className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none outline-none"
+                placeholder="Digite sua Observação Aqui..."
+                value={novaObservacaoFase}
+                onChange={(e) => setNovaObservacaoFase(e.target.value)}
+                autoFocus
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Sua Observação Será Adicionada a Este Exercício da Sessão.
+              </p>
+
+              <div className="mt-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Últimas Observações
+                </label>
+                <div className="w-full max-h-36 overflow-y-auto p-3 border border-gray-300 rounded-lg bg-slate-50 whitespace-pre-wrap">
+                  <p className="text-sm text-gray-600">
+                    {ultimasObservacoesSessao ||
+                      faseDoPassoAtual.observacaoFase ||
+                      "Nenhuma Observação Registrada."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsModalObservacaoAberto(false)}
+                className="px-4 py-2 font-semibold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleAdicionarObservacaoFase}
+                disabled={salvandoObservacaoFase || !novaObservacaoFase.trim()}
+                className="px-6 py-2 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+              >
+                {salvandoObservacaoFase ? "Salvando..." : "Salvar"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

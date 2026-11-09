@@ -111,6 +111,7 @@ export function GerenciarPaciente()
             onSalvar={salvar} 
             pacienteParaAlterar={pacienteEdicao}
             listaDoencas={listaDoencas}
+            onDoencaCriada={(novaDoenca) => setListaDoencas((prev) => [...prev, novaDoenca])}
             />
         </div>
         );
@@ -142,6 +143,7 @@ export function GerenciarPaciente()
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Nascimento</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sexo</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FES-I</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doença</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observações</th>
@@ -163,6 +165,7 @@ export function GerenciarPaciente()
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.telefone}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(paciente.data_nascimento).toLocaleDateString("pt-BR")}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paciente.sexo}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${infoFes.corBadge}`}>
                       {paciente.pontuacao ?? 16} Pontos — {infoFes.titulo}

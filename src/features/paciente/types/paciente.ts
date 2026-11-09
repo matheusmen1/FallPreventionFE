@@ -10,5 +10,6 @@ export interface Paciente{
     doenca?: Doenca,
     tipo_pessoa?:string,
     observacao?:string,
-    pontuacao?:number
+    pontuacao?:number,
+    sexo:string
 }

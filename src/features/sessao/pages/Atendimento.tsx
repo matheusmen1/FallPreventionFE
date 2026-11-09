@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import type { Sessao } from '../types/sessao';
+import type { SessaoFase } from '../types/sessaoFase';
 import { sessaoService } from '../../../services/sessaoService';
 import { useAuth } from '../../../contexts/AutoContext';
 import { useNavigate } from 'react-router-dom';
+import { ModalDetalhesExercicio } from '../components/ModalDetalhesExercicio';
+
 export function Atendimento()
 {
   useEffect(()=>{
@@ -10,6 +13,7 @@ export function Atendimento()
   }, [])
 
   const [sessoes, setSessoes] = useState<Sessao[]>([])
+  const [faseSelecionada, setFaseSelecionada] = useState<SessaoFase | null>(null);
   const { usuarioLogado } = useAuth();
   const navigate = useNavigate();
   async function carregarSessoesAprovadas()
@@ -76,27 +80,46 @@ export function Atendimento()
             </div>
 
             <div className="p-5 flex-1 bg-gray-50/50">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Intervenção(s) Clínica(s)</h4>
+              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Exercício(s)</h4>
               <ul className="space-y-2">
                 {sessao.sessaoFases
                   .slice()
                   .sort((a, b) => a.ordem - b.ordem)
                   .map((fase) => (
-                    <li key={fase.ordem} className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100 shadow-sm flex items-center gap-2">
-                      <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.ordem}º</span>
-                      {fase.exercicio.nome}
-                      <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.exercicio.tipo_exercicio.nome}</span>
-                      {fase.is_repeticao ? (
-                        <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">Repetições: {fase.repeticao}</span>
-                      ) : (
-                        <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">Tempo: {fase.tempo}s</span>
-                      )}
+                    <li key={fase.ordem} className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100 shadow-sm flex items-center justify-between gap-2">
+                      <div className="flex items-center flex-wrap gap-2">
+                        <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.ordem}º</span>
+                        <span>{fase.exercicio.nome}</span>
+                        <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">{fase.exercicio.tipo_exercicio.nome}</span>
+                        {fase.is_repeticao ? (
+                          <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">Repetições: {fase.repeticao}</span>
+                        ) : (
+                          <span className="bg-gray-200 text-gray-600 font-bold px-2 py-0.5 rounded text-xs">Tempo: {fase.tempo}s</span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFaseSelecionada(fase)}
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded transition-colors shrink-0 cursor-pointer"
+                      >
+                        Ver Mais
+                      </button>
                     </li>
                     
                   ))}
               </ul>
                     
             </div>
+             <div className="p-6 flex-1">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Monitores Autorizados</h4>
+                {sessao.sessaoMonitoresAutorizados && sessao.sessaoMonitoresAutorizados.length > 0 ? (
+                  <p className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-100 shadow-sm">
+                    {sessao.sessaoMonitoresAutorizados.map(m => m.nome).join(', ')}
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-500">Nenhum Monitor Autorizado.</p>
+                )}
+              </div>
              <div className="p-6 flex-1">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Observações</h4>
                 {sessao.observacao ? (
@@ -116,6 +139,11 @@ export function Atendimento()
           </div>
         ))}
       </div>
+
+      <ModalDetalhesExercicio
+        fase={faseSelecionada}
+        onFechar={() => setFaseSelecionada(null)}
+      />
     </div>
   );
 }

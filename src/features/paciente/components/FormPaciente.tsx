@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { Paciente } from '../types/paciente';
 import type { Doenca } from '../../doenca/types/doenca';
+import { doencaService } from '../../../services/doencaService';
+import { Plus, X } from 'lucide-react';
 
 interface FormProps 
 {
@@ -8,6 +10,7 @@ interface FormProps
   onSalvar: (paciente: Paciente) => void;
   pacienteParaAlterar?: Paciente | null;
   listaDoencas: Doenca[];
+  onDoencaCriada?: (novaDoenca: Doenca) => void;
 }
 
 export const PERGUNTAS_FES_I = [
@@ -48,20 +51,20 @@ export function obterClassificacaoFesI(pontuacao?: number) {
   if (pts <= 19) {
     return {
       titulo: "Baixa Preocupação",
-      faixa: "17–19 pontos",
+      faixa: "17 a 19 pontos",
       corBadge: "bg-blue-100 text-blue-800 border-blue-200"
     };
   }
   if (pts <= 27) {
     return {
-      titulo: "Preocupação Moderada",
-      faixa: "20–27 pontos",
+      titulo: "Moderada Preocupação",
+      faixa: "20 a 27 pontos",
       corBadge: "bg-amber-100 text-amber-800 border-amber-200"
     };
   }
   return {
-    titulo: "Alta Preocupação com Quedas",
-    faixa: "28–64 pontos",
+    titulo: "Alta Preocupação (Risco de Queda)",
+    faixa: "28 a 64 pontos",
     corBadge: "bg-red-100 text-red-800 border-red-200"
   };
 }
@@ -78,12 +81,26 @@ function distribuirPontuacaoEmRespostas(pontuacaoTotal?: number): number[] {
   return respostas;
 }
 
-export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaDoencas }: FormProps) {
+export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaDoencas, onDoencaCriada }: FormProps) {
   const [passoAtual, setPassoAtual] = useState<number>(1);
   const [formData, setFormData] = useState<Paciente>({
-    nome: '', cpf: '', email: '', telefone: '', data_nascimento: '', pontuacao: 16
+    nome: '', cpf: '', email: '', telefone: '', data_nascimento: '', sexo: '', pontuacao: 16
   });
   const [respostasFesI, setRespostasFesI] = useState<number[]>(Array(16).fill(1));
+
+  // Lista local de doenças para permitir inserção imediata sem recarregar a tela
+  const [doencas, setDoencas] = useState<Doenca[]>(listaDoencas);
+
+  // Estados para o modal de cadastro rápido de nova doença
+  const [modalNovaDoenca, setModalNovaDoenca] = useState(false);
+  const [nomeNovaDoenca, setNomeNovaDoenca] = useState('');
+  const [descricaoNovaDoenca, setDescricaoNovaDoenca] = useState('');
+  const [salvandoDoenca, setSalvandoDoenca] = useState(false);
+  const [erroDoenca, setErroDoenca] = useState('');
+
+  useEffect(() => {
+    setDoencas(listaDoencas);
+  }, [listaDoencas]);
 
   useEffect(() => {
     if (pacienteParaAlterar) {
@@ -144,8 +161,46 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
     });
   }
 
+  async function handleSalvarNovaDoenca(e: React.FormEvent) {
+    e.preventDefault();
+    if (!nomeNovaDoenca.trim()) {
+      setErroDoenca('Por Favor, Informe o Nome da Nova Doença.');
+      return;
+    }
+
+    try {
+      setSalvandoDoenca(true);
+      setErroDoenca('');
+
+      const nova = await doencaService.add({
+        nome: nomeNovaDoenca.trim(),
+        descricao: descricaoNovaDoenca.trim() || undefined
+      });
+
+      setDoencas(prev => [...prev, nova]);
+
+      setFormData(prev => ({
+        ...prev,
+        doenca: nova
+      }));
+
+      if (onDoencaCriada) {
+        onDoencaCriada(nova);
+      }
+
+      setNomeNovaDoenca('');
+      setDescricaoNovaDoenca('');
+      setModalNovaDoenca(false);
+    } catch (err) {
+      console.error('Erro ao cadastrar nova doença:', err);
+      setErroDoenca('Erro ao Cadastrar Doença.');
+    } finally {
+      setSalvandoDoenca(false);
+    }
+  }
+
   return (
-    <div className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden relative">
       <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-xl font-bold text-gray-800">
           {pacienteParaAlterar ? 'Alterar Paciente' : 'Novo Paciente'}
@@ -169,35 +224,44 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
           <form onSubmit={handleAvancarParaAnamnese} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Nome Completo</label>
+                <label className="block text-sm font-medium text-gray-700">Nome Completo<span className="text-red-500"> *</span></label>
                 <input type="text" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">CPF</label>
+                <label className="block text-sm font-medium text-gray-700">CPF<span className="text-red-500"> *</span></label>
                 <input type="text" required minLength={14} value={formData.cpf} onChange={e => setFormData({...formData, cpf: mascaraCPF(e.target.value)})}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">E-mail</label>
+                <label className="block text-sm font-medium text-gray-700">E-mail<span className="text-red-500"> *</span></label>
                 <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Telefone</label>
+                <label className="block text-sm font-medium text-gray-700">Telefone<span className="text-red-500"> *</span></label>
                 <input type="text" required minLength={14} maxLength={15} value={formData.telefone} onChange={e => setFormData({...formData, telefone: mascaraTelefone(e.target.value)})}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Data Nascimento</label>
+                <label className="block text-sm font-medium text-gray-700">Data Nascimento<span className="text-red-500"> *</span></label>
                 <input type="date" required value={formData.data_nascimento} onChange={e => setFormData({...formData, data_nascimento: e.target.value})}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Sexo<span className="text-red-500"> *</span></label>
+                <select value={formData.sexo} onChange={e => setFormData({ ...formData, sexo: e.target.value })}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none bg-blue-50">
+                  <option value="">Selecione o Sexo...</option>
+                  <option value="M">Masculino</option>
+                  <option value="F">Feminino</option>
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Observação (Opcional)</label>
                 <input type="text" value={formData.observacao || ''} onChange={e => setFormData({...formData, observacao: e.target.value})}
@@ -205,21 +269,36 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Doença (Opcional)</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Doença (Opcional)</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNomeNovaDoenca('');
+                      setDescricaoNovaDoenca('');
+                      setErroDoenca('');
+                      setModalNovaDoenca(true);
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline flex items-center gap-1 transition-colors cursor-pointer"
+                    title="Cadastrar uma Nova Doença"
+                  >
+                    <Plus size={14} /> Cadastrar Nova Doença
+                  </button>
+                </div>
                 <select  
                   value={formData.doenca?.id || ''} 
                   onChange={e => {
                     const idSelecionado = Number(e.target.value);
-                    const doenca = listaDoencas.find(tipo => tipo.id === idSelecionado);
+                    const doenca = doencas.find(tipo => tipo.id === idSelecionado);
                     setFormData({ 
                       ...formData, 
                       doenca: doenca || undefined
                     });
                   }}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none bg-blue-50"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none bg-blue-50"
                 >
                   <option value="">Selecione uma Doença...</option>
-                  {listaDoencas.map(doenca => (
+                  {doencas.map(doenca => (
                     <option key={doenca.id} value={doenca.id}>
                       {doenca.nome}
                     </option>
@@ -235,7 +314,7 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
               </button>
               <button type="submit"
                 className="rounded-md bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
-                Questionário FES-I
+                Próximo
               </button>
             </div>
           </form>
@@ -305,6 +384,81 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
           </form>
         )}
       </div>
+
+      {modalNovaDoenca && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-md overflow-hidden animate-fade-in">
+            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <Plus className="text-blue-600" size={18} />
+                Cadastrar Nova Doença
+              </h3>
+              <button
+                type="button"
+                onClick={() => setModalNovaDoenca(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                title="Fechar"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSalvarNovaDoenca} className="p-6 space-y-4">
+              {erroDoenca && (
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
+                  {erroDoenca}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nome da Doença <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  placeholder="Digite o Nome da Doença"
+                  value={nomeNovaDoenca}
+                  onChange={e => setNomeNovaDoenca(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Descrição (Opcional)
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder=""
+                  value={descricaoNovaDoenca}
+                  onChange={e => setDescricaoNovaDoenca(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setModalNovaDoenca(false)}
+                  className="px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                  disabled={salvandoDoenca}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={salvandoDoenca}
+                  className="px-4 py-2 rounded-md bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                >
+                  {salvandoDoenca ? "Salvando..." : "Confirmar"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

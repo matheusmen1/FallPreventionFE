@@ -29,6 +29,7 @@ export interface RelatorioSessaoDTO {
   sessaoStatus?: string;
   pacienteNome?: string;
   fisioterapeutaNome?: string;
+  usuarioExecutorNome?: string;
   dataHoraInicio: string;
   dataHoraFim?: string;
   duracaoTotalMinutos?: number;

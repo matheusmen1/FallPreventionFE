@@ -27,7 +27,7 @@ export function SessaoProvider({ children }: { children: ReactNode })
 
   async function atualizarSessoes()
  {
-    if (usuarioLogado?.nivel === 1)
+    if (usuarioLogado?.nivel! >= 1)
     { 
       try {
         const dados = await sessaoService.getAllPendenteByFisioterapeutaId(usuarioLogado?.id!);

@@ -144,7 +144,7 @@ export function GerenciarUsuarios() {
         Meus Monitores
       </button>
       </div>
-      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+      <div className="bg-white rounded-lg shadow overflow-x-auto border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -173,8 +173,8 @@ export function GerenciarUsuarios() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.telefone}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.ra}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${usuario.nivel === 1 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
-                      {usuario.nivel === 1 ? 'Fisioterapeuta' : 'Monitor'}
+                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${usuario.nivel === 2 ? 'bg-purple-100 text-purple-800' : usuario.nivel === 1 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                      {usuario.nivel === 2 ? 'Administrador' : usuario.nivel === 1 ? 'Fisioterapeuta' : 'Monitor'}
                     </span>
                   </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.responsavel ? usuario.responsavel.nome : '-'}</td>

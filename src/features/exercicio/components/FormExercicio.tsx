@@ -82,28 +82,28 @@ export function FormExercicio({ onCancelar, onSalvar, exercicioParaAlterar, list
   return (
     <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
       <h2 className="text-xl font-bold mb-6 text-gray-800">
-        {exercicioParaAlterar ? 'Alterar Intervenção Clínica' : 'Nova Intervenção Clínica'}
+        {exercicioParaAlterar ? 'Alterar Exercício' : 'Novo Exercício'}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Nome</label>
+            <label className="block text-sm font-medium text-gray-700">Nome <span className="text-red-500">*</span></label>
             <input type="text" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Descrição</label>
+            <label className="block text-sm font-medium text-gray-700">Descrição <span className="text-red-500">*</span></label>
             <input type="text" required value={formData.descricao} onChange={e => setFormData({...formData, descricao: e.target.value})}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Pacote Unity</label>
+            <label className="block text-sm font-medium text-gray-700">Pacote Unity <span className="text-red-500">*</span></label>
             <input type="text" required value={formData.codigo_nome} onChange={e => setFormData({...formData, codigo_nome: e.target.value})}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
           </div>
           <div>
-              <label className="block text-sm font-medium text-gray-700">Tipo de Intervenção Clínica</label>
+              <label className="block text-sm font-medium text-gray-700">Categoria <span className="text-red-500">*</span></label>
               <select 
                 required 
                 value={formData.tipo_exercicio?.id || ''} 
@@ -117,7 +117,7 @@ export function FormExercicio({ onCancelar, onSalvar, exercicioParaAlterar, list
                 }}
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none bg-blue-50"
               >
-                <option value="">Selecione um Tipo de Intervenção Clínica...</option>
+                <option value="">Selecione uma Categoria...</option>
                 {listaTipoExercicio.map(tipo => (
                   <option key={tipo.id} value={tipo.id}>
                     {tipo.nome}
@@ -126,7 +126,7 @@ export function FormExercicio({ onCancelar, onSalvar, exercicioParaAlterar, list
               </select>
             </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Dificuldade</label>
+            <label className="block text-sm font-medium text-gray-700">Dificuldade <span className="text-red-500">*</span></label>
             <select
               required
               value={formData.dificuldade ?? 1}

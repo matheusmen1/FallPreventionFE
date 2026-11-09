@@ -38,7 +38,7 @@ export function GerenciarSessao()
 
       if (usuarioLogado && usuarioLogado.id != null)
       {
-        if (usuarioLogado.nivel > 0)
+        if (usuarioLogado.nivel >= 1)
         {
           const dados = await sessaoService.getAll();
           setSessoes(dados);
@@ -72,7 +72,7 @@ export function GerenciarSessao()
   async function carregarSessoes() {
     try {
       if (usuarioLogado && usuarioLogado.id != null) {
-        if (usuarioLogado.nivel > 0) {
+        if (usuarioLogado.nivel >= 1) {
           const dados = await sessaoService.getAll();
           setSessoes(dados);
         } else {
@@ -125,7 +125,7 @@ export function GerenciarSessao()
       atualizarSessoes();
       if (usuarioLogado && usuarioLogado.id != null)
       {
-        if (usuarioLogado.nivel > 0)
+        if (usuarioLogado.nivel >= 1)
         {
           carregarSessoesAprovadas();
         }
@@ -210,7 +210,7 @@ export function GerenciarSessao()
         </button>
       </div>
       
-      {usuarioLogado != null && usuarioLogado.nivel > 0 && ( <div className="mb-4">
+      {usuarioLogado != null && usuarioLogado.nivel >= 1 && ( <div className="mb-4">
         <button
           onClick={() => {
             setBtSelecionado(!btSelecionado); 
@@ -227,14 +227,14 @@ export function GerenciarSessao()
         </button>
       </div>)}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+      <div className="bg-white rounded-lg shadow overflow-x-auto border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data / Hora</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsável</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intervenções Clínicas</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exercício(s)</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observações</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
@@ -258,7 +258,7 @@ export function GerenciarSessao()
                     {sessao.responsavel ? sessao.responsavel.nome : 'Não Atribuído'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {sessao.sessaoFases ? `${sessao.sessaoFases.length} Intervenção(s) Clínica(s) ` : '-'}
+                    {sessao.sessaoFases ? `${sessao.sessaoFases.length} Exercício(s)` : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {sessao.observacao || 'Nenhuma'}

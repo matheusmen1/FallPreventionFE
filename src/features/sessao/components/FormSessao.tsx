@@ -116,7 +116,7 @@ export function FormSessao({
     async function carregarMonitores() {
       if (!usuarioLogado?.id) return;
 
-      const responsavelId = usuarioLogado.nivel === 1
+      const responsavelId = usuarioLogado.nivel >= 1
         ? usuarioLogado.id
         : usuarioLogado.usr_responsavel_id ?? usuarioLogado.responsavel?.id;
 
@@ -214,7 +214,7 @@ export function FormSessao({
           
           <div className={`flex items-center ${passoAtual >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${passoAtual >= 2 ? 'border-blue-600 bg-blue-50' : 'border-gray-300 bg-white'}`}>2</div>
-            <span className="ml-2 font-medium hidden sm:inline">Intervenção Clínica</span>
+            <span className="ml-2 font-medium hidden sm:inline">Exercício</span>
           </div>
           <div className={`w-8 md:w-12 h-1 rounded ${passoAtual >= 3 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
 
@@ -253,7 +253,7 @@ export function FormSessao({
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Selecione o Paciente</h3>
               
               <div className="max-w-xl mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2"></label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Paciente <span className="text-red-500">*</span></label>
                 <select 
                   required 
                   value={formData.paciente?.id || ''} 
@@ -304,6 +304,12 @@ export function FormSessao({
                           : 'Não cadastrada'}
                       </span>
                     </div>
+                    <div className='col-span-1'>
+                      <span className="block text-xs text-slate-500 font-semibold mb-1">Sexo</span>
+                      <span className="text-sm text-slate-800 font-medium">
+                        {formData.paciente.sexo || 'Não cadastrado'}
+                      </span>
+                    </div>
                     <div>
                       <span className="block text-xs text-slate-500 font-semibold mb-1">Tipo de Pessoa</span>
                       <span className="text-sm text-slate-800 font-medium">
@@ -316,7 +322,7 @@ export function FormSessao({
                         {formData.paciente.doenca?.nome  || 'Nenhuma'}
                       </span>
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-1">
                       <span className="block text-xs text-slate-500 font-semibold mb-1">Anamnese FES-I Brasil</span>
                       {infoFesPaciente && (
                         <div className={`inline-block px-3 py-1.5 rounded-lg border text-xs font-bold ${infoFesPaciente.corBadge}`}>
@@ -343,20 +349,20 @@ export function FormSessao({
                 <div className="flex-1 border-r border-gray-200 pr-8">
                   <div className="flex flex-wrap justify-between items-end gap-4 mb-4">
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-800 mb-1">Catálogo de Intervenções Clínicas</h3>
+                      <h3 className="text-xl font-semibold text-gray-800 mb-1">Catálogo de Exercícios</h3>
                       <p className="text-sm text-gray-500">
-                        Exibindo Intervenções Compatíveis com a Pontuação FES-I de <strong>{formData.paciente?.nome}</strong> ({formData.paciente?.pontuacao ?? 16} Pontos).
+                        Exibindo Exercícios Compatíveis com a Pontuação FES-I de <strong>{formData.paciente?.nome}</strong> ({formData.paciente?.pontuacao ?? 16} Pontos).
                       </p>
                     </div>
                     
                     <div className="w-64">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Filtrar por Tipo de Intervenção</label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Filtrar por Categoria</label>
                       <select 
                         className="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                         value={filtroTipoId || ''}
                         onChange={e => setFiltroTipoId(e.target.value ? Number(e.target.value) : null)}
                       >
-                        <option value="">Todos os Tipos de Intervenção</option>
+                        <option value="">Todos as Categorias</option>
                         {listaTipoExercicio.map(tipo => (
                           <option key={tipo.id} value={tipo.id}>{tipo.nome}</option>
                         ))}
@@ -366,34 +372,44 @@ export function FormSessao({
                   
                   {exerciciosFiltrados.length === 0 ? (
                     <div className="p-8 text-center text-gray-400 border border-dashed border-gray-200 rounded-lg">
-                      Nenhuma Intervenção Clínica Encontrada para o Nível de Preocupação Deste Paciente Neste Filtro.
+                      Nenhum Exercício Encontrado para o Nível de Preocupação Deste Paciente Neste Filtro.
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
                       {exerciciosFiltrados.map(ex => {
                         const infoDif = obterInfoDificuldade(ex.dificuldade);
+                        const jaAdicionado = formData.sessaoFases?.some(f => f.exercicio.id === ex.id);
                         return (
                         <div 
                           key={ex.id} 
                           onClick={() => {
+                            if (jaAdicionado) return;
                             setExercicioEmConfiguracao(ex);
                             setConfigTemp({ is_repeticao: true, valor: 5 }); 
                           }}
-                          className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all group bg-white relative overflow-hidden"
+                          className={`border rounded-lg p-4 transition-all group relative overflow-hidden ${
+                            jaAdicionado
+                              ? 'border-blue-200 bg-slate-50 opacity-60 cursor-not-allowed'
+                              : 'border-gray-200 bg-white cursor-pointer hover:border-blue-500 hover:shadow-md'
+                          }`}
                         >
-                          <div className="w-full h-32 bg-gray-100 rounded-md mb-3 flex items-center justify-center text-gray-400 overflow-hidden relative">
-                            {ex.url_foto ? (
-                              <img src={`${API_URL}${ex.url_foto}`} alt={ex.nome} className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-xs italic">Sem Imagem</span>
-                            )}
-                            <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[11px] font-bold border shadow-sm ${infoDif.corBadge}`}>
-                              {infoDif.label}
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <span className="text-xs text-blue-600 font-semibold uppercase tracking-wide">
+                              {ex.tipo_exercicio.nome}
                             </span>
+                            <div className="flex items-center gap-1.5">
+                              {jaAdicionado && (
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-600 text-white shadow-sm">
+                                  Já Adicionado
+                                </span>
+                              )}
+                              <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border shadow-sm ${infoDif.corBadge}`}>
+                                {infoDif.label}
+                              </span>
+                            </div>
                           </div>
-                          <h4 className="font-bold text-gray-800 text-lg leading-tight">{ex.nome}</h4>
-                          <h3 className="text-sm text-blue-600 font-medium mt-1">{ex.tipo_exercicio.nome}</h3>
-                          <h3 className="text-sm text-gray-600 font-medium mt-1">{ex.descricao}</h3>
+                          <h4 className="font-bold text-gray-800 text-base leading-tight">{ex.nome}</h4>
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{ex.descricao}</p>
                         </div>
                       )})}
                     </div>
@@ -431,7 +447,7 @@ export function FormSessao({
                     ) : (
                       <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 p-4">
                         <p>Sessão Vazia.</p>
-                        <p className="text-sm mt-2">Clique em uma Intervenção ao Lado Para Configurar e Adicionar.</p>
+                        <p className="text-sm mt-2">Clique em um Exercício ao Lado Para Configurar e Adicionar.</p>
                       </div>
                     )}
                   </div>
@@ -525,6 +541,10 @@ export function FormSessao({
                       <button 
                         type='button'
                         onClick={() => {
+                          if (formData.sessaoFases?.some(f => f.exercicio.id === exercicioEmConfiguracao.id)) {
+                            setExercicioEmConfiguracao(null);
+                            return;
+                          }
                           const novaOrdem = (formData.sessaoFases?.length || 0) + 1;
                           const novaFase = {
                             ordem: novaOrdem,
@@ -617,7 +637,7 @@ export function FormSessao({
               <div className="flex-1">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">Defina a Data e Hora</h3>
                 <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 mb-6">
-                  <label className="block text-sm font-bold text-blue-900 mb-2"></label>
+                  <label className="block text-sm font-bold text-blue-900 mb-2">Data e Hora <span className="text-red-500">*</span></label>
                   <input 
                     type="datetime-local" required 
                     value={formData.data_hora?.toString() || ''} 
@@ -637,12 +657,30 @@ export function FormSessao({
                   </div>
                   
                   <div>
-                    <p className="text-xs text-gray-500 uppercase font-semibold">Carga de Intervenções Clínicas</p>
-                    <p className="font-medium text-gray-900">{formData.sessaoFases?.length} Intervenção(s) Clínicas(s)</p>
+                    <p className="text-xs text-gray-500 uppercase font-semibold">Carga de Exercícios</p>
+                    <p className="font-medium text-gray-900">{formData.sessaoFases?.length} Exercício(s)</p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase font-semibold">Observações</p>
                     <p className="font-medium text-gray-900">{formData.observacao || 'Nenhuma Observação'}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase font-semibold">Monitores Autorizados</p>
+                    {formData.sessaoMonitoresAutorizados && formData.sessaoMonitoresAutorizados.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {formData.sessaoMonitoresAutorizados.map(monitor => (
+                          <span
+                            key={monitor.id}
+                            className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-md"
+                          >
+                            {monitor.nome}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="font-medium text-gray-900">Nenhum Monitor Selecionado</p>
+                    )}
                   </div>
                 </div>
               </div>

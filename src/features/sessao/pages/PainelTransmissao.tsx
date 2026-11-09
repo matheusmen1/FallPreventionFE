@@ -25,47 +25,56 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
   useEffect(() =>
   {
    
-    wsRef.current = new WebSocket("ws://192.168.15.11:8080/ws/webrtc"); 
+    wsRef.current = new WebSocket("ws://192.168.15.10:8080/ws/webrtc"); 
 
-    const pc = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-    });
-    pcRef.current = pc;
-    pc.onconnectionstatechange = () => {
-      if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
-        setStatus("Aguardando Conexão do Meta Quest 3S...");
-        if (videoRef.current != null) {
-          videoRef.current.srcObject = null;
+    const criarPeerConnection = () => {
+      if (pcRef.current) {
+        pcRef.current.close();
+      }
+
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+      });
+      pcRef.current = pc;
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
+          setStatus("Aguardando Conexão do Meta Quest 3S...");
+          if (videoRef.current != null) {
+            videoRef.current.srcObject = null;
+          }
         }
-      }
-    };
-    pc.ontrack = (event) =>
-    {
+      };
+      pc.ontrack = (event) =>
+      {
+        
+          setStatus("Transmissão Ativa 🟢");
+      if (videoRef.current && event.streams[0])
+       {
+          videoRef.current.srcObject = event.streams[0];
+        }
       
-        setStatus("Transmissão Ativa 🟢");
-    if (videoRef.current && event.streams[0])
-     {
-        videoRef.current.srcObject = event.streams[0];
-      }
-    
-    };
+      };
 
-    pc.onicecandidate = (event) => {
-      if (event.candidate && wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({
-          tipo: 'ice',
-          candidate: event.candidate.candidate,
-          sdpMid: event.candidate.sdpMid,
-          sdpMLineIndex: event.candidate.sdpMLineIndex
-        }));
-      }
-     
+      pc.onicecandidate = (event) => {
+        if (event.candidate && wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({
+            tipo: 'ice',
+            candidate: event.candidate.candidate,
+            sdpMid: event.candidate.sdpMid,
+            sdpMLineIndex: event.candidate.sdpMLineIndex
+          }));
+        }
+       
+      };
+
+      return pc;
     };
 
     wsRef.current.onmessage = async (event) => {
       const msg = JSON.parse(event.data);
 
       if (msg.tipo === 'offer') {
+        const pc = criarPeerConnection();
         await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: msg.sdp }));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
@@ -75,8 +84,8 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
           sdp: answer.sdp
         }));
       } 
-      else if (msg.tipo === 'ice') {
-        await pc.addIceCandidate(new RTCIceCandidate({
+      else if (msg.tipo === 'ice' && pcRef.current) {
+        await pcRef.current.addIceCandidate(new RTCIceCandidate({
           candidate: msg.candidate,
           sdpMid: msg.sdpMid,
           sdpMLineIndex: msg.sdpMLineIndex
@@ -85,7 +94,7 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
     };
 
     return () => {
-      pc.close();
+      pcRef.current?.close();
       wsRef.current?.close();
     };
   }, []);

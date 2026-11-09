@@ -33,7 +33,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
     }
   }, []);
   useEffect(() => {
-    const ws = new WebSocket("ws://192.168.15.11:8080/ws/react");
+    const ws = new WebSocket("ws://192.168.15.10:8080/ws/react");
 
     ws.onopen = () => {
       console.log("React conectado ao servidor Java!");
@@ -51,7 +51,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
       }
       else
       if (pacote.acao === "FINALIZAR_SESSAO_REACT") {
-        onFinalizar();
+        navigate(`/relatorio/sessao/${id}`);
         console.log("Entrei");
       }
 
@@ -137,10 +137,14 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
       console.log("Erro ao Iniciar Sessão: ", error)
     }
   }
-  function onFinalizar() {
+  async function onFinalizar() {
 
-    if (id) {
-      navigate(`/relatorio/sessao/${id}`);
+    try {
+      if (id) {
+        await sessaoService.finalizarSessao(Number.parseInt(id));
+      }
+    } catch (error) {
+      console.log("Erro ao Finalizar Sessão: ", error)
     }
   }
   async function onReiniciarSessao() {
@@ -160,6 +164,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
   async function onReiniciarExercicio() {
     try {
       {
+        setFlag(false);
         await sessaoService.reiniciarExercicio();
       }
     } catch (error) {
@@ -180,9 +185,9 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
     }
   }
   async function onRecentralizar() {
-    try{
+    try {
       await sessaoService.recentralizar();
-    }catch(error){
+    } catch (error) {
       console.log("Erro ao Recentralizar: ", error)
     }
   }
@@ -259,7 +264,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
         </div>
 
         <div className="flex-1 p-6 overflow-y-auto">
-          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Intervenção(s) Clínica(s)</h3>
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Exercício(s)</h3>
           <div className="space-y-3">
             {(() => {
               const faseAtual = Number((sessao as any)?.ordemAtual) || 0;
@@ -271,7 +276,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
 
                 return (
                   <div key={fase.ordem} className={`p-4 rounded-lg border-2 transition-all ${isAtiva ? 'border-blue-500 bg-blue-50 shadow-md' :
-                      isPassada ? 'border-green-200 bg-green-50 opacity-60' : 'border-gray-100 bg-white'
+                    isPassada ? 'border-green-200 bg-green-50 opacity-60' : 'border-gray-100 bg-white'
                     }`}>
 
                     {fase.is_repeticao ? <span className={`font-bold ${isAtiva ? 'text-blue-700' : isPassada ? 'text-green-700' : 'text-gray-600'}`}>
@@ -311,24 +316,24 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
           </button>
           <button
             onClick={onProximaFase}
-            disabled={sessao?.status === 'APROVADA' || !flag}
+            disabled={sessao?.status === 'APROVADA' || sessao?.ordemAtual! >= sessao?.sessaoFases.length!}
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-            {sessao?.ordemAtual! < sessao?.sessaoFases.length! ? 'Próxima Intervenção' : 'Finalizar Sessão'}
+            Próximo Exercício
           </button>
 
-          <button
-            onClick={onReiniciarExercicio}
-            disabled={!flag}
-            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-            Reiniciar Intervenção
-          </button>
+
           <button
             onClick={onReiniciarSessao}
             disabled={sessao?.status === 'APROVADA'}
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
             Reiniciar Sessão
           </button>
-
+            <button
+            onClick={onFinalizar}
+            disabled={sessao?.status === 'APROVADA'}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+            Finalizar Sessão
+          </button>
 
         </div>
         <div className="p-6 bg-gray-50 border-t border-gray-200 grid grid-cols-2 gap-3">
@@ -340,14 +345,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
             Recentralizar
           </button>
-          <button
-            onClick={() => {
-              setIsModalAberto(true);
-              buscarSessaoObservacao();
-            }}
-            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
-            Adicionar Observação
-          </button>
+
 
 
           <button
@@ -355,9 +353,14 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
             disabled={sessao?.status !== 'EM_ANDAMENTO' && sessao?.status !== 'PAUSADA'}
             className="py-3 border-2 font-bold rounded-lg transition-all bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95 disabled:bg-slate-200 disabled:border-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {sessao?.status === 'PAUSADA' ? 'Retomar Intervenção' : 'Pausar Intervenção'}
+            {sessao?.status === 'PAUSADA' ? 'Retomar Exercício' : 'Pausar Exercício'}
           </button>
-
+          <button
+            onClick={onReiniciarExercicio}
+            disabled={!flag}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+            Reiniciar Exercício
+          </button>
           <button
             onClick={() => setIsGravando(!isGravando)}
             disabled={sessao?.status !== 'EM_ANDAMENTO'}
@@ -374,11 +377,20 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
         </div>
         <div className="p-6 bg-gray-50 border-t border-gray-200 grid grid-cols-1 gap-3">
           <button
+            onClick={() => {
+              setIsModalAberto(true);
+              buscarSessaoObservacao();
+            }}
+            className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
+            Adicionar Observação
+          </button>
+          <button
             onClick={() => setIsModalAbertoMensagem(true)}
             disabled={sessao?.status === 'APROVADA'}
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
             Enviar Mensagem
           </button>
+
         </div>
       </div>
 
@@ -452,7 +464,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
               </label>
               <div className="w-full h-30 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none whitespace-pre-wrap">
                 <p className="text-sm text-gray-500">
-                  {sessaoObservacao?.observacao || "Nenhuma Observação Registrada."}
+                  {sessao?.observacao && sessaoObservacao?.observacao ? "(Criação)"+": "+sessao?.observacao + "\n" + sessaoObservacao?.observacao : sessao?.observacao && !sessaoObservacao?.observacao ? "(Criação)"+": "+sessao?.observacao : !sessao?.observacao && sessaoObservacao?.observacao ? sessaoObservacao?.observacao : "Nenhuma Observação Registrada."}
                 </p>
               </div>
             </div>
