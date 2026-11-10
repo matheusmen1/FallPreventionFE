@@ -25,6 +25,8 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
   const [isGravando, setIsGravando] = useState(false);
   const [flag, setFlag] = useState(false);
   const [sessaoObservacao, setSessaoObservacao] = useState<SessaoObservacao | null>(null);
+  const [habilitarBotaoIniciar, setHabilitarBotaoIniciar] = useState(false);
+  const [avisoCapaceteAberto, setAvisoCapaceteAberto] = useState(true);
   useEffect(() => {
     carregarSessao();
     setMenuAberto(false);
@@ -54,8 +56,10 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
         navigate(`/relatorio/sessao/${id}`);
         console.log("Entrei");
       }
-
-
+      else
+      if (pacote.acao === "HABILITAR_BOTAO_INICIAR") {
+        setHabilitarBotaoIniciar(true);
+      }
     };
 
     ws.onclose = () => console.log("Conexão WebSocket fechada.");
@@ -310,7 +314,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
 
           <button
             onClick={onIniciar}
-            disabled={sessao?.status !== 'APROVADA'}
+            disabled={sessao?.status !== 'APROVADA' || !habilitarBotaoIniciar}
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
             Iniciar Sessão
           </button>
@@ -537,6 +541,25 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
                 {isSalvandoMensagem ? 'Enviando...' : 'Enviar'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {avisoCapaceteAberto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center animate-in fade-in zoom-in-95 duration-150">
+            <h3 className="text-lg font-bold text-gray-800 mb-2">
+              Atenção ao Iniciar
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Por Favor, Coloque o Capacete na Cabeça do Paciente e Ligue o Dispositivo.
+            </p>
+            <button
+              type="button"
+              onClick={() => setAvisoCapaceteAberto(false)}
+              className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors cursor-pointer"
+            >
+              Entendido
+            </button>
           </div>
         </div>
       )}

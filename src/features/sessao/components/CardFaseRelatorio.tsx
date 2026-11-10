@@ -389,7 +389,7 @@ export function CardFaseRelatorio({
         <div className="bg-slate-50 rounded-lg p-4 border border-gray-200">
           <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
             <FileText size={14} className="text-blue-600" />
-            Observação da Invervenção
+            Observação do Exercício
           </div>
           <p className="text-sm text-gray-700 leading-relaxed">
             {textoObservacaoFase}

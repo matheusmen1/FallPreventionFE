@@ -10,7 +10,7 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
   const videoRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const [status, setStatus] = useState("Aguardando Conexão do Meta Quest 3S...");
+  const [status, setStatus] = useState("Aguardando Transmissão...");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -38,21 +38,22 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
       pcRef.current = pc;
       pc.onconnectionstatechange = () => {
         if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
-          setStatus("Aguardando Conexão do Meta Quest 3S...");
+          setStatus("Aguardando Transmissão...");
           if (videoRef.current != null) {
             videoRef.current.srcObject = null;
           }
         }
       };
-      pc.ontrack = (event) =>
-      {
-        
-          setStatus("Transmissão Ativa 🟢");
-      if (videoRef.current && event.streams[0])
-       {
-          videoRef.current.srcObject = event.streams[0];
+        pc.ontrack = (event) => {
+        setStatus("Transmissão Ativa 🟢");
+        if (videoRef.current) {
+          const stream = (event.streams && event.streams[0]) 
+            ? event.streams[0] 
+            : new MediaStream([event.track]);
+            
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(err => console.warn("Aguardando interação:", err));
         }
-      
       };
 
       pc.onicecandidate = (event) => {
