@@ -29,6 +29,8 @@ import {
   encontrarItemCatalogo,
   verificarExercicioNaoExecutado,
 } from "../components/CardFaseRelatorio";
+import { GravacaoFase } from "../components/GravacaoFase";
+import type { SessaoGravacao } from "../types/sessaoGravacao";
 
 export function RelatorioExecucaoVR() {
   const { id } = useParams<{ id?: string }>();
@@ -44,6 +46,7 @@ export function RelatorioExecucaoVR() {
   );
 
   const [relatorio, setRelatorio] = useState<RelatorioSessaoDTO | null>(null);
+  const [gravacoes, setGravacoes] = useState<SessaoGravacao[]>([]);
   const [carregandoFiltros, setCarregandoFiltros] = useState<boolean>(false);
   const [carregandoRelatorio, setCarregandoRelatorio] = useState<boolean>(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -70,6 +73,32 @@ export function RelatorioExecucaoVR() {
       carregarRelatorioSessao(sesIdNum);
     }
   }, [id]);
+
+  // O upload da gravação da última fase só começa quando a tela de execução fecha, então pode
+  // terminar depois do relatório abrir: reconsulta as gravações por um tempo (até ~1 min).
+  const totalFases = relatorio?.fases.length ?? 0;
+  useEffect(() => {
+    if (!id || totalFases === 0) return;
+    const sesIdNum = Number(id);
+    let tentativas = 0;
+    let cancelado = false;
+    const timer = setInterval(async () => {
+      tentativas++;
+      try {
+        const lista = await sessaoService.getGravacoesBySessao(sesIdNum);
+        if (cancelado) return;
+        setGravacoes((atual) => (lista.length !== atual.length ? lista : atual));
+        if (lista.length >= totalFases) clearInterval(timer);
+      } catch {
+        // ignora: tenta de novo no próximo ciclo
+      }
+      if (tentativas >= 15) clearInterval(timer);
+    }, 4000);
+    return () => {
+      cancelado = true;
+      clearInterval(timer);
+    };
+  }, [id, totalFases]);
 
   useEffect(() => {
     if (!relatorio) return;
@@ -120,6 +149,10 @@ export function RelatorioExecucaoVR() {
     }
   }
 
+  function gravacaoIdDaFase(sessaoFaseId?: number): number | undefined {
+    return gravacoes.find((g) => g.sessaoFaseId === sessaoFaseId)?.id;
+  }
+
   async function carregarRelatorioSessao(sesId: number) {
     try {
       setCarregandoRelatorio(true);
@@ -127,7 +160,13 @@ export function RelatorioExecucaoVR() {
       const dados = await relatorioService.getRelatorioPorSessao(sesId);
       setRelatorio(dados);
       setPassoAtual(1);
-      setObservacaoGeralFinal(dados.observacao || "");
+      setObservacaoGeralFinal("");
+      try {
+        setGravacoes(await sessaoService.getGravacoesBySessao(sesId));
+      } catch (e) {
+        console.error("Erro ao carregar gravações da sessão:", e);
+        setGravacoes([]);
+      }
     } catch (err: any) {
       const msg =
         err?.response?.data?.mensagem ||
@@ -516,11 +555,17 @@ export function RelatorioExecucaoVR() {
                     </div>
                   </div>
 
-                  <span className="text-xs text-gray-500 flex items-center gap-1 bg-slate-50 px-3 py-1.5 rounded-lg border border-gray-200">
-                    <Clock size={14} className="text-gray-400" />
-                    {formatarHora(faseDoPassoAtual.dataHoraInicio)} às{" "}
-                    {formatarHora(faseDoPassoAtual.dataHoraFim)}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <GravacaoFase
+                      gravacaoId={gravacaoIdDaFase(faseDoPassoAtual.sessaoFaseId)}
+                      titulo={`${faseDoPassoAtual.ordem}º Exercício — ${faseDoPassoAtual.exercicioNome}`}
+                    />
+                    <span className="text-xs text-gray-500 flex items-center gap-1 bg-slate-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                      <Clock size={14} className="text-gray-400" />
+                      {formatarHora(faseDoPassoAtual.dataHoraInicio)} às{" "}
+                      {formatarHora(faseDoPassoAtual.dataHoraFim)}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -894,6 +939,7 @@ export function RelatorioExecucaoVR() {
                   <CardFaseRelatorio
                     key={fase.resultadoFaseId || fase.sessaoFaseId}
                     fase={fase}
+                    gravacaoId={gravacaoIdDaFase(fase.sessaoFaseId)}
                     somenteLeitura={true}
                     onEscalaAtualizada={handleEscalaFaseAtualizada}
                   />

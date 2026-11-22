@@ -6,4 +6,5 @@ export interface SessaoFase {
   repeticao?: number;
   tempo?: number;
   is_repeticao: boolean;
+  gravar?: boolean;
 }

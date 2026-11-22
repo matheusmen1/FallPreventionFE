@@ -84,10 +84,14 @@ export const sessaoService = {
         const response = await api.get(`/apis/sessao/gravacoes/${sessaoId}/${pacienteId}`);
         return response.data;
     },
-    addGravacao: async (sessaoId: number, videoBlob: Blob): Promise<void> => {
+    getGravacoesBySessao: async (sessaoId: number): Promise<SessaoGravacao[]> => {
+        const response = await api.get(`/apis/sessao/gravacoes/${sessaoId}`);
+        return response.data;
+    },
+    addGravacao: async (sessaoId: number, sessaoFaseId: number, videoBlob: Blob): Promise<void> => {
         const formData = new FormData();
-        formData.append('video', videoBlob, `gravacao_${sessaoId}.webm`);
-        await api.post(`/apis/sessao/gravacao/${sessaoId}`, formData, {
+        formData.append('video', videoBlob, `gravacao_${sessaoId}_${sessaoFaseId}.webm`);
+        await api.post(`/apis/sessao/gravacao/${sessaoId}/${sessaoFaseId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -121,5 +125,8 @@ export const sessaoService = {
     },
     finalizarSessao: async (sessaoId: number): Promise<void> => {
         await api.put(`/apis/sessao/finalizar/${sessaoId}`);
+    },
+    verificar: async (): Promise<boolean> => {
+        return (await api.get(`/apis/sessao/verificar`)).data;
     }
 }

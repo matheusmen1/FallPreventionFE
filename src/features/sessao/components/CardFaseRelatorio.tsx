@@ -14,9 +14,11 @@ import type {
   RelatorioFaseDTO,
 } from "../types/relatorioSessao";
 import { relatorioService } from "../../../services/relatorioService";
+import { GravacaoFase } from "./GravacaoFase";
 
 interface CardFaseRelatorioProps {
   fase: RelatorioFaseDTO;
+  gravacaoId?: number;
   somenteLeitura?: boolean;
   onEscalaAtualizada: (
     resultadoFaseId: number,
@@ -226,6 +228,7 @@ export function verificarExercicioNaoExecutado(fase: RelatorioFaseDTO): boolean 
 
 export function CardFaseRelatorio({
   fase,
+  gravacaoId,
   somenteLeitura = false,
   onEscalaAtualizada,
 }: CardFaseRelatorioProps) {
@@ -319,10 +322,16 @@ export function CardFaseRelatorio({
           </span>
         </div>
 
-        <span className="text-xs text-gray-500 flex items-center gap-1">
-          <Clock size={14} className="text-gray-400" />
-          {formatarHora(fase.dataHoraInicio)} às {formatarHora(fase.dataHoraFim)}
-        </span>
+        <div className="flex items-center gap-3">
+          <GravacaoFase
+            gravacaoId={gravacaoId}
+            titulo={`${fase.ordem}º Exercício — ${fase.exercicioNome}`}
+          />
+          <span className="text-xs text-gray-500 flex items-center gap-1">
+            <Clock size={14} className="text-gray-400" />
+            {formatarHora(fase.dataHoraInicio)} às {formatarHora(fase.dataHoraFim)}
+          </span>
+        </div>
       </div>
 
       <div className="p-6 space-y-5">

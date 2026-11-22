@@ -54,7 +54,7 @@ export function FormSessao({
   const [filtroTipoId, setFiltroTipoId] = useState<number | null>(null);
   const [exerciciosFiltrados, setExerciciosFiltrados] = useState<Exercicio[]>([]);
   const [exercicioEmConfiguracao, setExercicioEmConfiguracao] = useState<Exercicio | null>(null);
-  const [configTemp, setConfigTemp] = useState({ is_repeticao: false, valor: 30 });
+  const [configTemp, setConfigTemp] = useState({ is_repeticao: false, valor: 30, gravar: false });
 
   useEffect(() => {
     async function carregarExerciciosCompativeis() {
@@ -385,7 +385,7 @@ export function FormSessao({
                           onClick={() => {
                             if (jaAdicionado) return;
                             setExercicioEmConfiguracao(ex);
-                            setConfigTemp({ is_repeticao: true, valor: 5 }); 
+                            setConfigTemp({ is_repeticao: true, valor: 5, gravar: true });
                           }}
                           className={`border rounded-lg p-4 transition-all group relative overflow-hidden ${
                             jaAdicionado
@@ -438,6 +438,7 @@ export function FormSessao({
                               </div>
                               <p className="text-xs text-gray-500 mt-1 ml-7 font-medium">
                                 {fase.is_repeticao ? `${fase.repeticao} Repetições` : `${fase.tempo} Segundos`}
+                                {fase.gravar && <span className="ml-2 text-red-600 font-bold">● Gravar</span>}
                               </p>
                             </div>
                             <button type="button" onClick={() => removerFase(index)} className="text-red-400 hover:text-red-600 p-2">✕</button>
@@ -500,7 +501,7 @@ export function FormSessao({
                         <div className="grid grid-cols-2 gap-3 mb-6">
                           <button 
                             type='button'
-                            onClick={() => setConfigTemp({ is_repeticao: true, valor: 5 })}
+                            onClick={() => setConfigTemp(prev => ({ ...prev, is_repeticao: true, valor: 5 }))}
                             className={`py-3 px-4 rounded-xl border-2 font-bold transition-all ${configTemp.is_repeticao ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:border-slate-300'}`}
                           >
                             Repetições
@@ -508,7 +509,7 @@ export function FormSessao({
                           
                           <button 
                             type='button'
-                            onClick={() => setConfigTemp({ is_repeticao: false, valor: 30 })}
+                            onClick={() => setConfigTemp(prev => ({ ...prev, is_repeticao: false, valor: 30 }))}
                             className={`py-3 px-4 rounded-xl border-2 font-bold transition-all ${!configTemp.is_repeticao ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500 hover:border-slate-300'}`}
                           >
                               Tempo
@@ -536,9 +537,19 @@ export function FormSessao({
                             className="w-12 h-12 flex items-center justify-center bg-white rounded-lg shadow-sm font-bold text-slate-600 text-xl hover:bg-slate-100"
                           >+</button>
                         </div>
+
+                        <label className="flex items-center gap-3 mb-6 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={configTemp.gravar}
+                            onChange={(e) => setConfigTemp(prev => ({ ...prev, gravar: e.target.checked }))}
+                            className="w-5 h-5 accent-red-600"
+                          />
+                          <span className="text-sm font-bold text-slate-700">Gravar</span>
+                        </label>
                       </div>
 
-                      <button 
+                      <button
                         type='button'
                         onClick={() => {
                           if (formData.sessaoFases?.some(f => f.exercicio.id === exercicioEmConfiguracao.id)) {
@@ -551,7 +562,8 @@ export function FormSessao({
                             exercicio: exercicioEmConfiguracao,
                             is_repeticao: configTemp.is_repeticao,
                             tempo: !configTemp.is_repeticao ? configTemp.valor : 5,
-                            repeticao: configTemp.is_repeticao ? configTemp.valor : 30
+                            repeticao: configTemp.is_repeticao ? configTemp.valor : 30,
+                            gravar: configTemp.gravar
                           };
                           
                           setFormData({

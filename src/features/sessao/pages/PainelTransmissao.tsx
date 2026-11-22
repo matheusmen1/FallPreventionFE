@@ -1,137 +1,164 @@
 import { useEffect, useRef, useState } from 'react';
 import { sessaoService } from '../../../services/sessaoService';
-
+import type { Configuracao } from '../../configuracao/types/configuracao';
+import { configuracaoService } from '../../../services/configuracaoService';
 interface PainelTransmissaoProps {
-  isGravacao: boolean;
   sessaoId: number;
+  sessaoFaseId?: number;   
+  gravar: boolean;         
+  emExecucao: boolean;     
+  reinicioKey: number;     
 }
-export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProps)
-{ 
+export function PainelTransmissao({ sessaoId, sessaoFaseId, gravar, emExecucao, reinicioKey }: PainelTransmissaoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const [status, setStatus] = useState("Aguardando Transmissão...");
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const gravadoRef = useRef<{ stream: MediaStream; fase: number } | null>(null);
+  const reinicioKeyRef = useRef(reinicioKey);
+  reinicioKeyRef.current = reinicioKey;
+  const [configuracao, setConfiguracao] = useState<Configuracao | null>(null);
+  useEffect(() => {
+    obterIPv4Local();
+  }, []);
 
   useEffect(() => {
-    if (isGravacao) {
-      iniciarGravacao();
-    } else {
-      pararGravacao();
+    if (!emExecucao || !gravar || !stream || !sessaoFaseId || !sessaoId) {
+      console.log("[gravação] não iniciou", { emExecucao, gravar, temStream: !!stream, sessaoFaseId });
+      return;
     }
-  }, [isGravacao]); // sempre quando houver mudanças
 
-  useEffect(() =>
-  {
-   
-    wsRef.current = new WebSocket("ws://192.168.15.10:8080/ws/webrtc"); 
+    const ultimo = gravadoRef.current;
+    if (ultimo && ultimo.stream === stream && ultimo.fase !== sessaoFaseId) {
+      console.log("[gravação] aguardando stream do novo app", { faseAnterior: ultimo.fase, faseAtual: sessaoFaseId });
+      return;
+    }
+    gravadoRef.current = { stream, fase: sessaoFaseId };
+    console.log("[gravação] iniciou fase", sessaoFaseId);
 
-    const criarPeerConnection = () => {
-      if (pcRef.current) {
-        pcRef.current.close();
-      }
+    const faseGravada = sessaoFaseId;      
+    const sessaoGravada = sessaoId;
+    const chaveInicio = reinicioKey;
+    const chunks: Blob[] = [];
+    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
 
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-      });
-      pcRef.current = pc;
-      pc.onconnectionstatechange = () => {
-        if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
-          setStatus("Aguardando Transmissão...");
-          if (videoRef.current != null) {
-            videoRef.current.srcObject = null;
-          }
-        }
-      };
-        pc.ontrack = (event) => {
-        setStatus("Transmissão Ativa 🟢");
-        if (videoRef.current) {
-          const stream = (event.streams && event.streams[0]) 
-            ? event.streams[0] 
-            : new MediaStream([event.track]);
-            
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(err => console.warn("Aguardando interação:", err));
-        }
-      };
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate && wsRef.current?.readyState === WebSocket.OPEN) {
-          wsRef.current.send(JSON.stringify({
-            tipo: 'ice',
-            candidate: event.candidate.candidate,
-            sdpMid: event.candidate.sdpMid,
-            sdpMLineIndex: event.candidate.sdpMLineIndex
-          }));
-        }
-       
-      };
-
-      return pc;
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) chunks.push(event.data);
     };
-
-    wsRef.current.onmessage = async (event) => {
-      const msg = JSON.parse(event.data);
-
-      if (msg.tipo === 'offer') {
-        const pc = criarPeerConnection();
-        await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: msg.sdp }));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        
-        wsRef.current?.send(JSON.stringify({
-          tipo: 'answer',
-          sdp: answer.sdp
-        }));
-      } 
-      else if (msg.tipo === 'ice' && pcRef.current) {
-        await pcRef.current.addIceCandidate(new RTCIceCandidate({
-          candidate: msg.candidate,
-          sdpMid: msg.sdpMid,
-          sdpMLineIndex: msg.sdpMLineIndex
-        }));
+    mediaRecorder.onstop = async () => {
+      if (reinicioKeyRef.current !== chaveInicio) {
+        console.log("[gravação] descartada (reinício), fase", faseGravada);
+        return;
+      }
+      if (chunks.length === 0) {
+        console.log("[gravação] sem dados, nada enviado, fase", faseGravada);
+        return;
+      }
+      console.log("[gravação] enviando fase", faseGravada, chunks.length, "chunks");
+      try {
+        await sessaoService.addGravacao(sessaoGravada, faseGravada, new Blob(chunks, { type: 'video/webm' }));
+      } catch (error) {
+        console.error("Erro ao enviar a gravação da fase:", error);
       }
     };
+    mediaRecorder.start();
 
     return () => {
-      pcRef.current?.close();
-      wsRef.current?.close();
+      if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
     };
-  }, []);
-  const iniciarGravacao = () => {
-    const stream = videoRef.current?.srcObject as MediaStream;
-    
-    if (stream) {
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = []; 
+  }, [sessaoId, sessaoFaseId, gravar, emExecucao, stream, reinicioKey]);
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunksRef.current.push(event.data);
+  useEffect(() => {
+    if (configuracao?.ip) {
+      wsRef.current = new WebSocket(`ws://${configuracao?.ip}:8080/ws/webrtc`);
+
+      const criarPeerConnection = () => {
+        if (pcRef.current) {
+          pcRef.current.close();
+        }
+
+        const pc = new RTCPeerConnection({
+          iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+        });
+        pcRef.current = pc;
+        pc.onconnectionstatechange = () => {
+          if (pcRef.current !== pc) 
+            return; 
+          if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
+            setStatus("Aguardando Transmissão...");
+            setStream(null);
+            if (videoRef.current != null) {
+              videoRef.current.srcObject = null;
+            }
+          }
+        };
+        pc.ontrack = (event) => {
+          console.log("[webrtc] ontrack: novo stream");
+          setStatus("Transmissão Ativa 🟢");
+          if (videoRef.current) {
+            const novoStream = (event.streams && event.streams[0])
+              ? event.streams[0]
+              : new MediaStream([event.track]);
+
+            videoRef.current.srcObject = novoStream;
+            videoRef.current.play().catch(err => console.warn("Aguardando interação:", err));
+            setStream(novoStream);
+          }
+        };
+
+        pc.onicecandidate = (event) => {
+          if (event.candidate && wsRef.current?.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({
+              tipo: 'ice',
+              candidate: event.candidate.candidate,
+              sdpMid: event.candidate.sdpMid,
+              sdpMLineIndex: event.candidate.sdpMLineIndex
+            }));
+          }
+
+        };
+
+        return pc;
+      };
+
+      wsRef.current.onmessage = async (event) => {
+        const msg = JSON.parse(event.data);
+
+        if (msg.tipo === 'offer') {
+          const pc = criarPeerConnection();
+          await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: msg.sdp }));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+
+          wsRef.current?.send(JSON.stringify({
+            tipo: 'answer',
+            sdp: answer.sdp
+          }));
+        }
+        else if (msg.tipo === 'ice' && pcRef.current) {
+          await pcRef.current.addIceCandidate(new RTCIceCandidate({
+            candidate: msg.candidate,
+            sdpMid: msg.sdpMid,
+            sdpMLineIndex: msg.sdpMLineIndex
+          }));
         }
       };
-      mediaRecorder.onstop = async () => {
-        console.log("Processando vídeo para envio...");
-    
-        const videoBlob = new Blob(chunksRef.current, { type: 'video/webm' });
-        
-        try {
-          await sessaoService.addGravacao(sessaoId, videoBlob);
-          alert("Gravação Salva com Sucesso");
-        } catch (error) {
-          console.error("Erro ao enviar o vídeo:", error);
-          alert("Erro ao Salvar Gravação");
-        }
+
+      return () => {
+        pcRef.current?.close();
+        wsRef.current?.close();
       };
-      mediaRecorder.start();
     }
-  };
-
-  const pararGravacao = () => {
-    mediaRecorderRef.current?.stop();
-  };
+  }, [configuracao?.ip]);
+  async function obterIPv4Local() {
+    try {
+      const configuracao = await configuracaoService.getAll();
+      setConfiguracao(configuracao[0]);
+    } catch (error) {
+      console.error("Erro ao obter IPv4 Local:", error);
+    }
+  }
   return (
     <div className="w-full max-w-[90%] flex flex-col items-center justify-center">
       <div className="w-full flex justify-between items-center mb-4 px-2">
@@ -143,16 +170,16 @@ export function PainelTransmissao( {isGravacao, sessaoId}: PainelTransmissaoProp
           {status}
         </span>
       </div>
-      
+
       <div className="w-full aspect-video border-2 border-slate-700 rounded-2xl overflow-hidden bg-black shadow-2xl relative">
-        <video 
-          ref={videoRef} 
-          autoPlay 
-          playsInline 
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
           muted
           className="w-full h-full object-cover"
         />
-        
+
         {!status.includes('Ativa') && (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-800/50 backdrop-blur-sm">
             <svg className="w-12 h-12 text-slate-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">

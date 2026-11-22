@@ -2,24 +2,25 @@ import { useEffect, useState, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AutoContext';
 import { useSessao } from '../contexts/SessaoContext';
-import { 
-  Calendar, 
-  ChevronDown, 
-  ClipboardList, 
-  PlusCircle, 
-  Users, 
-  Stethoscope, 
-  HeartPulse, 
-  Layers, 
-  Activity, 
-  FileText, 
-  Video, 
-  User, 
+import {
+  Calendar,
+  ChevronDown,
+  ClipboardList,
+  PlusCircle,
+  Users,
+  Stethoscope,
+  HeartPulse,
+  Layers,
+  Activity,
+  FileText,
+  Video,
+  User,
   LogOut,
   CalendarCheck,
   UserCheck,
   CheckCircle,
-  ChevronLeft
+  ChevronLeft,
+  Settings
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -28,17 +29,17 @@ interface LayoutProps {
 
 function VrHeadsetIcon({ className = "w-6 h-6" }: { className?: string }) {
   return (
-    <svg 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={className}
     >
       <path d="M3 8a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-3.2a1.5 1.5 0 0 0-1.4 1v0a1 1 0 0 1-1.8 0v0a1.5 1.5 0 0 0-1.4-1H6a3 3 0 0 1-3-3V8z" />
-   
+
       <circle cx="7.5" cy="11.5" r="2" />
       <circle cx="16.5" cy="11.5" r="2" />
       <path d="M3 11H1.5" />
@@ -93,6 +94,9 @@ function getInfoPagina(pathname: string): { titulo: string; categoria: string } 
   if (pathname.startsWith('/sessao/execucao')) {
     return { titulo: 'Execução de Sessão', categoria: 'Sessões' };
   }
+  if (pathname.startsWith('/configuracoes')) {
+    return { titulo: 'Gerenciar Configurações', categoria: 'Configurações' };
+  }
   return { titulo: 'Painel Clínico', categoria: 'Início' };
 }
 
@@ -110,7 +114,7 @@ export function Layout({ menuAberto }: LayoutProps) {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const cargoTexto = usuarioLogado?.nivel === 1 ? 'Fisioterapeuta' : usuarioLogado?.nivel === 0 ? 'Monitor' : 'Administrador';
-  
+
   const totalAtendimentos = (qtdeAprovadas || 0) + (qtdeAprovadasMonitores || 0);
   const totalAtendimentosMonitor = (qtdeAprovadasAutorizadas || 0) + (qtdeAprovadas || 0);
 
@@ -162,8 +166,8 @@ export function Layout({ menuAberto }: LayoutProps) {
                 </div>
               </div>
             ) : (
-              <div 
-                className="w-full flex justify-center cursor-pointer" 
+              <div
+                className="w-full flex justify-center cursor-pointer"
                 onClick={toggleRecolhido}
                 title="Expandir menu (Fall Prevention VR)"
               >
@@ -186,14 +190,14 @@ export function Layout({ menuAberto }: LayoutProps) {
           </div>
 
           <nav className="flex-1 p-3 flex flex-col gap-5 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-slate-700">
-            
+
             <div>
               {!recolhido ? (
                 <div className="flex items-center justify-between px-3 py-1.5 mb-2 rounded-lg bg-emerald-950/40 border border-emerald-800/40 text-emerald-400">
                   <span className="text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5">
                     <Calendar size={13} className="text-emerald-400" />
                     Sessões
-                  </span> 
+                  </span>
                 </div>
               ) : (
                 <div className="flex justify-center my-1" title="Sessões">
@@ -213,15 +217,14 @@ export function Layout({ menuAberto }: LayoutProps) {
                     }
                   }}
                   aria-expanded={sessoesDropdownAberto}
-                  className={`w-full py-2 rounded-lg hover:bg-slate-800 transition-colors flex items-center font-medium text-emerald-400 ${
-                    recolhido ? 'justify-center px-0' : 'justify-between px-3'
-                  }`}
+                  className={`w-full py-2 rounded-lg hover:bg-slate-800 transition-colors flex items-center font-medium text-emerald-400 ${recolhido ? 'justify-center px-0' : 'justify-between px-3'
+                    }`}
                   title="Sessões Disponíveis"
                 >
                   <span className="flex items-center gap-2.5">
                     <div className="relative">
                       <Calendar size={18} />
-                      {recolhido && ((usuarioLogado?.nivel! >= 1  ? totalAtendimentos : totalAtendimentosMonitor) > 0) && (
+                      {recolhido && ((usuarioLogado?.nivel! >= 1 ? totalAtendimentos : totalAtendimentosMonitor) > 0) && (
                         <span className="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-slate-900"></span>
                       )}
                     </div>
@@ -235,9 +238,9 @@ export function Layout({ menuAberto }: LayoutProps) {
                     )}
                   </span>
                   {!recolhido && (
-                    <ChevronDown 
-                      size={16} 
-                      className={`transition-transform duration-200 text-emerald-400 ${sessoesDropdownAberto ? 'rotate-180' : ''}`} 
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-200 text-emerald-400 ${sessoesDropdownAberto ? 'rotate-180' : ''}`}
                     />
                   )}
                 </button>
@@ -246,11 +249,10 @@ export function Layout({ menuAberto }: LayoutProps) {
                   <div className="ml-4 mt-1.5 space-y-1 border-l-2 border-emerald-900/80 pl-2.5">
                     <Link
                       to="/atendimento"
-                      className={`flex justify-between items-center px-3 py-1.5 rounded-md transition-colors text-sm ${
-                        isRotaAtiva('/atendimento') 
-                          ? 'bg-emerald-950/60 text-emerald-300 font-bold border border-emerald-700/40' 
+                      className={`flex justify-between items-center px-3 py-1.5 rounded-md transition-colors text-sm ${isRotaAtiva('/atendimento')
+                          ? 'bg-emerald-950/60 text-emerald-300 font-bold border border-emerald-700/40'
                           : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                      }`}
+                        }`}
                       onClick={() => setSessoesDropdownAberto(false)}
                     >
                       <span className="flex items-center gap-2 text-xs">
@@ -263,15 +265,14 @@ export function Layout({ menuAberto }: LayoutProps) {
                         </span>
                       )}
                     </Link>
-                    
+
                     {usuarioLogado?.nivel! >= 1 && (
                       <Link
                         to="/atendimento-monitores"
-                        className={`flex justify-between items-center px-3 py-1.5 rounded-md transition-colors text-sm ${
-                          isRotaAtiva('/atendimento-monitores')
+                        className={`flex justify-between items-center px-3 py-1.5 rounded-md transition-colors text-sm ${isRotaAtiva('/atendimento-monitores')
                             ? 'bg-emerald-950/60 text-emerald-300 font-bold border border-emerald-700/40'
                             : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }`}
+                          }`}
                         onClick={() => setSessoesDropdownAberto(false)}
                       >
                         <span className="flex items-center gap-2 text-xs">
@@ -285,15 +286,14 @@ export function Layout({ menuAberto }: LayoutProps) {
                         )}
                       </Link>
                     )}
-                    
+
                     {usuarioLogado?.nivel === 0 && (
                       <Link
                         to="/atendimento-autorizadas"
-                        className={`flex justify-between items-center px-3 py-1.5 rounded-md transition-colors text-sm ${
-                          isRotaAtiva('/atendimento-autorizadas')
+                        className={`flex justify-between items-center px-3 py-1.5 rounded-md transition-colors text-sm ${isRotaAtiva('/atendimento-autorizadas')
                             ? 'bg-emerald-950/60 text-emerald-300 font-bold border border-emerald-700/40'
                             : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }`}
+                          }`}
                         onClick={() => setSessoesDropdownAberto(false)}
                       >
                         <span className="flex items-center gap-2 text-xs">
@@ -312,13 +312,12 @@ export function Layout({ menuAberto }: LayoutProps) {
               </div>
 
               {usuarioLogado?.nivel! >= 1 && (
-                <Link 
-                  to="/aprovacao-sessoes" 
-                  className={`mt-1 py-2 rounded-lg transition-colors flex items-center ${
-                    isRotaAtiva('/aprovacao-sessoes')
+                <Link
+                  to="/aprovacao-sessoes"
+                  className={`mt-1 py-2 rounded-lg transition-colors flex items-center ${isRotaAtiva('/aprovacao-sessoes')
                       ? 'bg-slate-800 text-cyan-400 font-semibold'
                       : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                  } ${recolhido ? 'justify-center px-0' : 'justify-between px-3'}`}
+                    } ${recolhido ? 'justify-center px-0' : 'justify-between px-3'}`}
                   title="Sessões Pendentes"
                 >
                   <span className="flex items-center gap-2.5">
@@ -337,15 +336,14 @@ export function Layout({ menuAberto }: LayoutProps) {
                   )}
                 </Link>
               )}
-              
+
               {/* Nova Sessão */}
-              <Link 
-                to="/sessoes" 
-                className={`mt-1 py-2 rounded-lg transition-colors flex items-center ${
-                  isRotaAtiva('/sessoes')
+              <Link
+                to="/sessoes"
+                className={`mt-1 py-2 rounded-lg transition-colors flex items-center ${isRotaAtiva('/sessoes')
                     ? 'bg-slate-800 text-cyan-400 font-semibold'
                     : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                } ${recolhido ? 'justify-center px-0' : 'justify-between px-3'}`}
+                  } ${recolhido ? 'justify-center px-0' : 'justify-between px-3'}`}
                 title="Gerenciar / Nova Sessão"
               >
                 <span className="flex items-center gap-2.5">
@@ -381,13 +379,12 @@ export function Layout({ menuAberto }: LayoutProps) {
               )}
 
               <div className="flex flex-col gap-1">
-                <Link 
-                  to="/pacientes" 
-                  className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${
-                    isRotaAtiva('/pacientes')
+                <Link
+                  to="/pacientes"
+                  className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${isRotaAtiva('/pacientes')
                       ? 'bg-blue-600 text-white font-semibold shadow-sm'
                       : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                  } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
+                    } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
                   title="Gerenciar Pacientes"
                 >
                   <Stethoscope size={18} className={isRotaAtiva('/pacientes') ? 'text-white' : 'text-slate-400'} />
@@ -396,54 +393,52 @@ export function Layout({ menuAberto }: LayoutProps) {
 
                 {usuarioLogado?.nivel === 2 && (
                   <>
-                    <Link 
-                      to="/usuarios" 
-                      className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${
-                        isRotaAtiva('/usuarios')
+                    <Link
+                      to="/usuarios"
+                      className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${isRotaAtiva('/usuarios')
                           ? 'bg-blue-600 text-white font-semibold shadow-sm'
                           : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                      } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
+                        } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
                       title="Gerenciar Usuários"
                     >
                       <Users size={18} className={isRotaAtiva('/usuarios') ? 'text-white' : 'text-slate-400'} />
                       {!recolhido && <span className="text-sm">Usuários</span>}
                     </Link>
 
-                    <Link 
-                      to="/exercicios" 
-                      className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${
-                        isRotaAtiva('/exercicios')
+                    <Link
+                      to="/exercicios"
+                      className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${isRotaAtiva('/exercicios')
                           ? 'bg-blue-600 text-white font-semibold shadow-sm'
                           : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                      } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
+                        } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
                       title="Gerenciar Exercícios"
                     >
                       <HeartPulse size={18} className={isRotaAtiva('/exercicios') ? 'text-white' : 'text-slate-400'} />
                       {!recolhido && <span className="text-sm">Exercícios</span>}
                     </Link>
 
-                    <Link 
-                      to="/categorias" 
-                      className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${
-                        isRotaAtiva('/categorias')
+                    <Link
+                      to="/categorias"
+                      className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${isRotaAtiva('/categorias')
                           ? 'bg-blue-600 text-white font-semibold shadow-sm'
                           : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                      } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
+                        } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
                       title="Categorias"
                     >
                       <Layers size={18} className={isRotaAtiva('/categorias') ? 'text-white' : 'text-slate-400'} />
                       {!recolhido && <span className="text-sm">Categorias</span>}
                     </Link>
+
+
                   </>
                 )}
 
-                <Link 
-                  to="/doencas" 
-                  className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${
-                    isRotaAtiva('/doencas')
+                <Link
+                  to="/doencas"
+                  className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${isRotaAtiva('/doencas')
                       ? 'bg-blue-600 text-white font-semibold shadow-sm'
                       : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                  } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
+                    } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
                   title="Gerenciar Doenças"
                 >
                   <Activity size={18} className={isRotaAtiva('/doencas') ? 'text-white' : 'text-slate-400'} />
@@ -467,45 +462,67 @@ export function Layout({ menuAberto }: LayoutProps) {
               )}
 
               <div className="flex flex-col gap-1">
-                <Link 
-                  to="/relatorio/execucao" 
-                  className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${
-                    isRotaAtiva('/relatorio/execucao') || isRotaAtiva('/relatorio/sessao')
+                <Link
+                  to="/relatorio/execucao"
+                  className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${isRotaAtiva('/relatorio/execucao') || isRotaAtiva('/relatorio/sessao')
                       ? 'bg-purple-600 text-white font-semibold shadow-sm'
                       : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                  } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
+                    } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
                   title="Relatório de Execução VR"
                 >
                   <ClipboardList size={18} className={isRotaAtiva('/relatorio/execucao') ? 'text-white' : 'text-slate-400'} />
                   {!recolhido && <span className="text-sm">Resultados</span>}
                 </Link>
 
-                <Link 
-                  to="/relatorio/observacao" 
-                  className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${
-                    isRotaAtiva('/relatorio/observacao')
+                <Link
+                  to="/relatorio/observacao"
+                  className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${isRotaAtiva('/relatorio/observacao')
                       ? 'bg-purple-600 text-white font-semibold shadow-sm'
                       : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                  } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
+                    } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
                   title="Relatório de Observações"
                 >
                   <FileText size={18} className={isRotaAtiva('/relatorio/observacao') ? 'text-white' : 'text-slate-400'} />
                   {!recolhido && <span className="text-sm">Observações</span>}
                 </Link>
 
-                <Link 
-                  to="/relatorio/gravacoes" 
-                  className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${
-                    isRotaAtiva('/relatorio/gravacoes')
+                <Link
+                  to="/relatorio/gravacoes"
+                  className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${isRotaAtiva('/relatorio/gravacoes')
                       ? 'bg-purple-600 text-white font-semibold shadow-sm'
                       : 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                  } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
+                    } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
                   title="Relatório de Gravações"
                 >
                   <Video size={18} className={isRotaAtiva('/relatorio/gravacoes') ? 'text-white' : 'text-slate-400'} />
                   {!recolhido && <span className="text-sm">Gravações</span>}
                 </Link>
               </div>
+            </div>
+            <div>
+              {!recolhido ? (
+                <div className="flex items-center justify-between px-3 py-1.5 mb-2 rounded-lg bg-gray-950/40 border border-gray-800/40 text-gray-400">
+                  <span className="text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                    <FileText size={13} className="text-gray-400" />
+                    Configurações
+                  </span>
+                </div>
+              ) : (
+                <div className="flex justify-center my-1" title="Relatórios">
+                  <span className="w-8 h-1 rounded-full bg-gray-500/50"></span>
+                </div>
+              )}
+              <Link
+                to="/configuracoes"
+                className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${isRotaAtiva('/configuracoes')
+                    ? 'bg-gray-600 text-white font-semibold shadow-sm'
+                    : 'hover:bg-slate-800 text-slate-300 hover:text-white'
+                  } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
+                title="Gerenciar Configurações"
+              >
+                <Settings size={18} className={isRotaAtiva('/configuracoes') ? 'text-white' : 'text-slate-400'} />
+                {!recolhido && <span className="text-sm">Configurações</span>}
+              </Link>
             </div>
           </nav>
 
@@ -546,9 +563,9 @@ export function Layout({ menuAberto }: LayoutProps) {
                 {usuarioLogado?.nome?.charAt(0)}
               </div>
 
-              <ChevronDown 
-                size={16} 
-                className={`text-gray-500 transition-transform duration-200 ${dropdownAberto ? 'rotate-180' : ''}`} 
+              <ChevronDown
+                size={16}
+                className={`text-gray-500 transition-transform duration-200 ${dropdownAberto ? 'rotate-180' : ''}`}
               />
             </button>
 

@@ -5,6 +5,7 @@ import { sessaoService } from '../../../services/sessaoService';
 import { useAuth } from '../../../contexts/AutoContext';
 import { useNavigate } from 'react-router-dom';
 import { ModalDetalhesExercicio } from '../components/ModalDetalhesExercicio';
+import { configuracaoService } from '../../../services/configuracaoService';
 
 export function Atendimento()
 {
@@ -29,12 +30,21 @@ export function Atendimento()
   {
     if (usuarioLogado != null && usuarioLogado.id != null)
     try{
+      obterIPv4Local();
       navigate(`/sessao/execucao/${idSessao}`);
       
     }catch(error){
       console.log("Erro ao Iniciar Sessão: ", error)
     }
   }
+   async function obterIPv4Local() {
+      try {
+        await configuracaoService.getLocalIPv4();
+      } catch (error) {
+        console.error("Erro ao obter IPv4 Local:", error);
+  
+      }
+    }
   function calcularIdade(dataNascimento: string): number
   {
     const nascimento = new Date(dataNascimento);

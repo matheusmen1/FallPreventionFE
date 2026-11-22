@@ -6,6 +6,8 @@ import { PainelTransmissao } from './PainelTransmissao';
 import { useNavigate } from 'react-router-dom';
 import type { SessaoObservacao } from '../types/sessaoObservacao';
 import { useSessao } from '../../../contexts/SessaoContext';
+import type { Configuracao } from '../../configuracao/types/configuracao';
+import { configuracaoService } from '../../../services/configuracaoService';
 
 interface ExecucaoSessaoProps {
   setMenuAberto: (menuAberto: boolean) => void;
@@ -22,50 +24,78 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
   const [isSalvandoMensagem, setIsSalvandoMensagem] = useState(false);
   const [observacao, setObservacao] = useState("");
   const [isSalvandoObservacao, setIsSalvandoObservacao] = useState(false);
-  const [isGravando, setIsGravando] = useState(false);
+  const [reinicioKey, setReinicioKey] = useState(0);
+  const [reiniciando, setReiniciando] = useState(false);
   const [flag, setFlag] = useState(false);
   const [sessaoObservacao, setSessaoObservacao] = useState<SessaoObservacao | null>(null);
   const [habilitarBotaoIniciar, setHabilitarBotaoIniciar] = useState(false);
-  const [avisoCapaceteAberto, setAvisoCapaceteAberto] = useState(true);
+  const [avisoCapaceteAberto, setAvisoCapaceteAberto] = useState(false);
+  const [configuracao, setConfiguracao] = useState<Configuracao | null>(null);
   useEffect(() => {
     carregarSessao();
-    setMenuAberto(false);
+    verificarConexao();
+    obterIPv4Local();
+    setMenuAberto(false); 
     return () => {
-      setMenuAberto(true);
-    }
+        setMenuAberto(true);
+      }
   }, []);
   useEffect(() => {
-    const ws = new WebSocket("ws://192.168.15.10:8080/ws/react");
+    if (configuracao?.ip) {
+      const ws = new WebSocket(`ws://${configuracao?.ip}:8080/ws/react`);
 
-    ws.onopen = () => {
-      console.log("React conectado ao servidor Java!");
-    };
+      ws.onopen = () => {
+        console.log("React conectado ao servidor Java!");
+      };
 
-    ws.onmessage = (event) => {
-      const pacote = JSON.parse(event.data);
-      if (pacote.acao === "PROXIMA_FASE_REACT") {
-        setFlag(false);
-        carregarSessao();
-      }
-      else
-      if (pacote.acao === "HABILITAR_BOTAO_REINICIAR_INTERVENCAO") {
-        setFlag(true);
-      }
-      else
-      if (pacote.acao === "FINALIZAR_SESSAO_REACT") {
-        navigate(`/relatorio/sessao/${id}`);
-        console.log("Entrei");
-      }
-      else
-      if (pacote.acao === "HABILITAR_BOTAO_INICIAR") {
-        setHabilitarBotaoIniciar(true);
-      }
-    };
+      ws.onmessage = (event) => {
+        const pacote = JSON.parse(event.data);
+        if (pacote.acao === "PROXIMA_FASE_REACT") {
+          setFlag(false);
+          carregarSessao();
+        }
+        else
+          if (pacote.acao === "HABILITAR_BOTAO_REINICIAR_INTERVENCAO") {
+            setFlag(true);
+          }
+          else
+            if (pacote.acao === "FINALIZAR_SESSAO_REACT") {
+              navigate(`/relatorio/sessao/${id}`);
+              console.log("Entrei");
+            }
+            else
+              if (pacote.acao === "HABILITAR_BOTAO_INICIAR") {
+                setHabilitarBotaoIniciar(true);
+              }
+      };
 
-    ws.onclose = () => console.log("Conexão WebSocket fechada.");
+      ws.onclose = () => console.log("Conexão WebSocket fechada.");
 
-    return () => ws.close();
-  }, []);
+      return () => ws.close();
+    }
+
+  }, [configuracao?.ip, id]);
+  async function verificarConexao() {
+  try {
+    const resposta = await sessaoService.verificar();
+    if (resposta) {
+      setAvisoCapaceteAberto(false);
+    } else {
+      setAvisoCapaceteAberto(true);
+    }
+  } catch (error) {
+    setAvisoCapaceteAberto(true);
+    console.error("Conexao Nao Estabelecida:", error);
+  }
+}
+  async function obterIPv4Local() {
+    try {
+      const configuracao = await configuracaoService.getAll();
+      setConfiguracao(configuracao[0]);
+    } catch (error) {
+      console.error("Erro ao obter IPv4 Local:", error);
+    }
+  }
   async function carregarSessao() {
     try {
       if (id != null) {
@@ -154,21 +184,24 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
   async function onReiniciarSessao() {
     try {
       if (sessao != null && sessao.id != null) {
-        setIsGravando(false);
-        //await sessaoService.retomar(sessao.id);
+        setReiniciando(true);
+        setReinicioKey(k => k + 1);
         await sessaoService.reiniciarSessao(sessao.id);
-        carregarSessao();
+        await carregarSessao();
       }
 
 
     } catch (error) {
       console.log("Erro ao Reiniciar Sessão: ", error)
+    } finally {
+      setReiniciando(false);
     }
   }
   async function onReiniciarExercicio() {
     try {
       {
         setFlag(false);
+        setReinicioKey(k => k + 1); 
         await sessaoService.reiniciarExercicio();
       }
     } catch (error) {
@@ -247,6 +280,8 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
     }
     return idade;
   }
+  const faseEmExecucao = sessao?.sessaoFases?.find(f => f.ordem === sessao?.ordemAtual);
+  const emExecucao = (sessao?.status === 'EM_ANDAMENTO' || sessao?.status === 'PAUSADA') && !reiniciando;
   return (
 
     <div className="flex h-[85vh] w-full bg-slate-900 font-sans overflow-hidden">
@@ -303,6 +338,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
 
                     <p className="text-xs text-gray-500 mt-1 font-mono">{fase.exercicio.tipo_exercicio.nome}</p>
                     <p className="text-xs text-gray-500 mt-1 font-mono">{fase.exercicio.codigo_nome}</p>
+                    {fase.gravar && <p className="text-xs text-red-600 mt-1 font-bold">● Gravar</p>}
                   </div>
                 );
               });
@@ -332,7 +368,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
             Reiniciar Sessão
           </button>
-            <button
+          <button
             onClick={onFinalizar}
             disabled={sessao?.status === 'APROVADA'}
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
@@ -365,17 +401,6 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
             className=" py-3 border-2 font-bold rounded-lg transition-all  bg-white border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95   disabled:bg-slate-200   disabled:border-slate-300  disabled:text-slate-400 disabled:cursor-not-allowed   disabled:opacity-70 ">
             Reiniciar Exercício
           </button>
-          <button
-            onClick={() => setIsGravando(!isGravando)}
-            disabled={sessao?.status !== 'EM_ANDAMENTO'}
-            className={`py-3 border-2 font-bold rounded-lg transition-all active:scale-95 disabled:bg-slate-200 disabled:border-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed disabled:opacity-70 
-              ${isGravando
-                ? 'bg-red-50 border-red-300 text-red-600 hover:bg-red-100'
-                : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
-              }`}
-          >
-            {isGravando ? 'Parar Gravação' : 'Gravar Sessão'}
-          </button>
 
 
         </div>
@@ -400,7 +425,13 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
 
 
       <div className="w-[75%] h-full flex flex-col items-center justify-center relative p-10">
-        <PainelTransmissao isGravacao={isGravando} sessaoId={sessao?.id || 0} />
+        <PainelTransmissao
+          sessaoId={sessao?.id || 0}
+          sessaoFaseId={faseEmExecucao?.id}
+          gravar={!!faseEmExecucao?.gravar}
+          emExecucao={emExecucao}
+          reinicioKey={reinicioKey}
+        />
         <div className="absolute bottom-2 right-24 flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
           <span className="flex h-3 w-3 relative">
             {sessao?.status === 'EM_ANDAMENTO' && (
@@ -468,7 +499,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
               </label>
               <div className="w-full h-30 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none whitespace-pre-wrap">
                 <p className="text-sm text-gray-500">
-                  {sessao?.observacao && sessaoObservacao?.observacao ? "(Criação)"+": "+sessao?.observacao + "\n" + sessaoObservacao?.observacao : sessao?.observacao && !sessaoObservacao?.observacao ? "(Criação)"+": "+sessao?.observacao : !sessao?.observacao && sessaoObservacao?.observacao ? sessaoObservacao?.observacao : "Nenhuma Observação Registrada."}
+                  {sessao?.observacao && sessaoObservacao?.observacao ? "(Criação)" + ": " + sessao?.observacao + "\n" + sessaoObservacao?.observacao : sessao?.observacao && !sessaoObservacao?.observacao ? "(Criação)" + ": " + sessao?.observacao : !sessao?.observacao && sessaoObservacao?.observacao ? sessaoObservacao?.observacao : "Nenhuma Observação Registrada."}
                 </p>
               </div>
             </div>

@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { GerenciarDoenca } from '../features/doenca/pages/GerenciarDoenca';
 import { AtendimentoMonitor } from '../features/sessao/pages/AtendimentoMonitor';
 import { AtendimentoAutorizadas } from '../features/sessao/pages/AtendimentoAutorizadas';
+import { GerenciarConfiguracao } from '../features/configuracao/pages/GerenciarConfiguracao';
 export function AppRoutes()
 {
   const { usuarioLogado } = useAuth();
@@ -42,6 +43,7 @@ export function AppRoutes()
               <Route path="usuarios" element={<GerenciarUsuarios />} />
               <Route path="exercicios" element={<GerenciarExercicio />} />
               <Route path="categorias" element={<GerenciarTipoExercicio/>}></Route>
+              <Route path="configuracoes" element={<GerenciarConfiguracao/>}></Route>
             </>
           )}
           {usuarioLogado.nivel >= 1 && (
