@@ -20,6 +20,7 @@ import { GerenciarDoenca } from '../features/doenca/pages/GerenciarDoenca';
 import { AtendimentoMonitor } from '../features/sessao/pages/AtendimentoMonitor';
 import { AtendimentoAutorizadas } from '../features/sessao/pages/AtendimentoAutorizadas';
 import { GerenciarConfiguracao } from '../features/configuracao/pages/GerenciarConfiguracao';
+import { Ajuda } from '../features/ajuda/pages/Ajuda';
 export function AppRoutes()
 {
   const { usuarioLogado } = useAuth();
@@ -55,7 +56,8 @@ export function AppRoutes()
           <Route path="atendimento-autorizadas" element={<AtendimentoAutorizadas/>}></Route>
           <Route path="doencas" element={<GerenciarDoenca/>}></Route>
           <Route path="meus-dados" element={<MeusDados />} />
-          <Route path="pacientes" element={<GerenciarPaciente />} />    
+          <Route path="pacientes" element={<GerenciarPaciente />} />
+          <Route path="ajuda" element={<Ajuda />} />
           <Route path="sessoes" element={<GerenciarSessao/>}></Route>
           <Route path="atendimento" element={<Atendimento/>}></Route>
           <Route path="sessao/execucao/:id" element={<ExecucaoSessao setMenuAberto={setMenuAberto} />} /> 

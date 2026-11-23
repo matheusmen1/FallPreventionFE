@@ -20,7 +20,8 @@ import {
   UserCheck,
   CheckCircle,
   ChevronLeft,
-  Settings
+  Settings,
+  HelpCircle
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -96,6 +97,9 @@ function getInfoPagina(pathname: string): { titulo: string; categoria: string } 
   }
   if (pathname.startsWith('/configuracoes')) {
     return { titulo: 'Gerenciar Configurações', categoria: 'Configurações' };
+  }
+  if (pathname.startsWith('/ajuda')) {
+    return { titulo: 'Como Usar o Sistema', categoria: 'Ajuda' };
   }
   return { titulo: 'Painel Clínico', categoria: 'Início' };
 }
@@ -499,7 +503,8 @@ export function Layout({ menuAberto }: LayoutProps) {
                 </Link>
               </div>
             </div>
-            <div>
+            {usuarioLogado?.nivel === 2 && (
+              <div>
               {!recolhido ? (
                 <div className="flex items-center justify-between px-3 py-1.5 mb-2 rounded-lg bg-gray-950/40 border border-gray-800/40 text-gray-400">
                   <span className="text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5">
@@ -522,6 +527,32 @@ export function Layout({ menuAberto }: LayoutProps) {
               >
                 <Settings size={18} className={isRotaAtiva('/configuracoes') ? 'text-white' : 'text-slate-400'} />
                 {!recolhido && <span className="text-sm">Configurações</span>}
+              </Link>
+            </div>
+            )}
+            <div>
+              {!recolhido ? (
+                <div className="flex items-center justify-between px-3 py-1.5 mb-2 rounded-lg bg-sky-950/40 border border-sky-800/40 text-sky-400">
+                  <span className="text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                    <HelpCircle size={13} className="text-sky-400" />
+                    Suporte
+                  </span>
+                </div>
+              ) : (
+                <div className="flex justify-center my-1" title="Suporte">
+                  <span className="w-8 h-1 rounded-full bg-sky-500/50"></span>
+                </div>
+              )}
+              <Link
+                to="/ajuda"
+                className={`py-2 rounded-lg transition-colors flex items-center gap-2.5 ${isRotaAtiva('/ajuda')
+                    ? 'bg-sky-600 text-white font-semibold shadow-sm'
+                    : 'hover:bg-slate-800 text-slate-300 hover:text-white'
+                  } ${recolhido ? 'justify-center px-0' : 'px-3'}`}
+                title="Ajuda"
+              >
+                <HelpCircle size={18} className={isRotaAtiva('/ajuda') ? 'text-white' : 'text-slate-400'} />
+                {!recolhido && <span className="text-sm">Ajuda</span>}
               </Link>
             </div>
           </nav>

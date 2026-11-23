@@ -48,86 +48,6 @@ export const CATALOGO_ESCALA_BERG: ItemEscalaBerg[] = [
     ],
   },
   {
-    titulo: "1. SENTADO PARA EM PÉ",
-    opcoes: [
-      { valor: 4, descricao: "(4) capaz de permanecer em pé sem o auxílio das mãos e estabilizar de maneira independente" },
-      { valor: 3, descricao: "(3) capaz de permanecer em pé independentemente usando as mãos" },
-      { valor: 2, descricao: "(2) capaz de permanecer em pé usando as mãos após várias tentativas" },
-      { valor: 1, descricao: "(1) necessidade de ajuda mínima para ficar em pé ou estabilizar" },
-      { valor: 0, descricao: "(0) necessidade de moderada ou máxima assistência para permanecer em pé" },
-    ],
-  },
-  {
-    titulo: "2. EM PÉ SEM APOIO",
-    opcoes: [
-      { valor: 4, descricao: "(4) capaz de permanecer em pé com segurança por 2 minutos" },
-      { valor: 3, descricao: "(3) capaz de permanecer em pé durante 2 minutos com supervisão" },
-      { valor: 2, descricao: "(2) capaz de permanecer em pé durante 30 segundos sem suporte" },
-      { valor: 1, descricao: "(1) necessidade de várias tentativas para permanecer 30 segundos sem suporte" },
-      { valor: 0, descricao: "(0) incapaz de permanecer em pé por 30 segundos sem assistência" },
-    ],
-  },
-  {
-    titulo: "3. SENTADO SEM SUPORTE PARA AS COSTAS MAS COM OS PÉS APOIADOS SOBRE O CHÃO OU SOBRE UM BANCO",
-    opcoes: [
-      { valor: 4, descricao: "(4) capaz de sentar com segurança por 2 minutos" },
-      { valor: 3, descricao: "(3) capaz de sentar por 2 minutos sob supervisão" },
-      { valor: 2, descricao: "(2) capaz de sentar durante 30 segundos" },
-      { valor: 1, descricao: "(1) capaz de sentar durante 10 segundos" },
-      { valor: 0, descricao: "(0) incapaz de sentar sem suporte durante 10 segundos" },
-    ],
-  },
-  {
-    titulo: "4. EM PÉ PARA SENTADO",
-    opcoes: [
-      { valor: 4, descricao: "(4) senta com segurança com o mínimo uso das mãos" },
-      { valor: 3, descricao: "(3) controla descida utilizando as mãos" },
-      { valor: 2, descricao: "(2) apóia a parte posterior das pernas na cadeira para controlar a descida" },
-      { valor: 1, descricao: "(1) senta independentemente mas apresenta descida descontrolada" },
-      { valor: 0, descricao: "(0) necessita de ajuda para sentar" },
-    ],
-  },
-  {
-    titulo: "5. TRANSFERÊNCIAS",
-    opcoes: [
-      { valor: 4, descricao: "(4) capaz de passar com segurança com o mínimo uso das mãos" },
-      { valor: 3, descricao: "(3) capaz de passar com segurança com uso das mãos evidente" },
-      { valor: 2, descricao: "(2) capaz de passar com pistas verbais e/ou supervisão" },
-      { valor: 1, descricao: "(1) necessidade de assistência de uma pessoa" },
-      { valor: 0, descricao: "(0) necessidade de assistência de duas pessoas ou supervisão para segurança" },
-    ],
-  },
-  {
-    titulo: "6. EM PÉ SEM SUPORTE COM OLHOS FECHADOS",
-    opcoes: [
-      { valor: 4, descricao: "(4) capaz de permanecer em pé com segurança por 10 segundos" },
-      { valor: 3, descricao: "(3) capaz de permanecer em pé com segurança por 10 segundos com supervisão" },
-      { valor: 2, descricao: "(2) capaz de permanecer em pé durante 3 segundos" },
-      { valor: 1, descricao: "(1) incapaz de manter os olhos fechados por 3 segundos mas permanece em pé" },
-      { valor: 0, descricao: "(0) necessidade de ajuda para evitar queda" },
-    ],
-  },
-  {
-    titulo: "7. EM PÉ SEM SUPORTE COM OS PÉS JUNTOS",
-    opcoes: [
-      { valor: 4, descricao: "(4) capaz de permanecer em pé com os pés juntos independentemente com segurança por 1 minuto" },
-      { valor: 3, descricao: "(3) capaz de permanecer em pé com os pés juntos independentemente com segurança por 1 minuto, com supervisão" },
-      { valor: 2, descricao: "(2) capaz de permanecer em pé com os pés juntos independentemente e se manter por 30 segundos" },
-      { valor: 1, descricao: "(1) necessidade de ajuda para manter a posição mas capaz de ficar em pé por 15 segundos com os pés juntos" },
-      { valor: 0, descricao: "(0) necessidade de ajuda para manter a posição mas incapaz de se manter por 15 segundos" },
-    ],
-  },
-  {
-    titulo: "8. ALCANCE A FRENTE COM OS BRAÇOS EXTENDIDOS PERMANECENDO EM PÉ",
-    opcoes: [
-      { valor: 4, descricao: "(4) capaz de alcançar com confiabilidade acima de 25cm (10 polegadas)" },
-      { valor: 3, descricao: "(3) capaz de alcançar acima de 12,5cm (5 polegadas)" },
-      { valor: 2, descricao: "(2) capaz de alcançar acima de 5cm (2 polegadas)" },
-      { valor: 1, descricao: "(1) capaz de alcançar mas com necessidade de supervisão" },
-      { valor: 0, descricao: "(0) perda de equilíbrio durante as tentativas / necessidade de suporte externo" },
-    ],
-  },
-  {
     titulo: "9. APANHAR UM OBJETO DO CHÃO A PARTIR DA POSIÇÃO EM PÉ",
     opcoes: [
       { valor: 4, descricao: "(4) capaz de apanhar o chinelo facilmente e com segurança" },
@@ -155,36 +75,6 @@ export const CATALOGO_ESCALA_BERG: ItemEscalaBerg[] = [
       { valor: 2, descricao: "(2) capaz de virar 360 graus com segurança mas lentamente" },
       { valor: 1, descricao: "(1) necessita de supervisão ou orientação verbal" },
       { valor: 0, descricao: "(0) necessita de assistência enquanto vira" },
-    ],
-  },
-  {
-    titulo: "12. COLOCAR PÉS ALTERNADOS SOBRE DEGRAU OU BANCO PERMANECENDO EM PÉ E SEM APOIO",
-    opcoes: [
-      { valor: 4, descricao: "(4) capaz de ficar em pé independentemente e com segurança e completar 8 passos em 20 segundos" },
-      { valor: 3, descricao: "(3) capaz de ficar em pé independentemente e completar 8 passos em mais de 20 segundos" },
-      { valor: 2, descricao: "(2) capaz de completar 4 passos sem ajuda mas com supervisão" },
-      { valor: 1, descricao: "(1) capaz de completar mais de 2 passos necessitando de mínima assistência" },
-      { valor: 0, descricao: "(0) necessita de assistência para prevenir queda / incapaz de tentar" },
-    ],
-  },
-  {
-    titulo: "13. PERMANECER EM PÉ SEM APOIO COM OUTRO PÉ A FRENTE",
-    opcoes: [
-      { valor: 4, descricao: "(4) capaz de posicionar o pé independentemente e manter por 30 segundos" },
-      { valor: 3, descricao: "(3) capaz de posicionar o pé para frente do outro independentemente e manter por 30 segundos" },
-      { valor: 2, descricao: "(2) capaz de dar um pequeno passo independentemente e manter por 30 segundos" },
-      { valor: 1, descricao: "(1) necessidade de ajuda para dar o passo mas pode manter por 15 segundos" },
-      { valor: 0, descricao: "(0) perda de equilíbrio enquanto dá o passo ou enquanto fica de pé" },
-    ],
-  },
-  {
-    titulo: "14. PERMANECER EM PÉ APOIADO EM UMA PERNA",
-    opcoes: [
-      { valor: 4, descricao: "(4) capaz de levantar a perna independentemente e manter por mais de 10 segundos" },
-      { valor: 3, descricao: "(3) capaz de levantar a perna independentemente e manter entre 5 e 10 segundos" },
-      { valor: 2, descricao: "(2) capaz de levantar a perna independentemente e manter por 3 segundos ou mais" },
-      { valor: 1, descricao: "(1) tenta levantar a perna e é incapaz de manter 3 segundos, mas permanece em pé independentemente" },
-      { valor: 0, descricao: "(0) incapaz de tentar ou precisa de assistência para evitar queda" },
     ],
   },
 ];
