@@ -141,7 +141,6 @@ export function GerenciarExercicio()
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dificuldade</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pacote Unity</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -159,11 +158,6 @@ export function GerenciarExercicio()
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.descricao}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.tipo_exercicio.nome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${infoDif.corBadge}`}>
-                      {infoDif.label}
-                    </span>
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.codigo_nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><div className="flex gap-2 justify-end">
                     <button onClick={() => onAlterar(exercicio)}  className="px-3 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all duration-100">Alterar</button>

@@ -61,9 +61,6 @@ export function ModalDetalhesExercicio({ fase, onFechar }: ModalDetalhesExercici
               <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-md">
                 {fase.ordem}º Exercício da Sessão
               </span>
-              <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${infoDif.corBadge}`}>
-                Dificuldade: {infoDif.label}
-              </span>
             </div>
 
             <div>

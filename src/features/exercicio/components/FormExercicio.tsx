@@ -92,7 +92,6 @@ export function FormExercicio({ onCancelar, onSalvar, exercicioParaAlterar, list
     dificuldade: 1
   });
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [tentouEnviar, setTentouEnviar] = useState(false);
 
   // Pré-visualização de um vídeo recém-selecionado (ainda não enviado)
@@ -124,7 +123,6 @@ export function FormExercicio({ onCancelar, onSalvar, exercicioParaAlterar, list
     );
 
     if (videoFile) pacote.append("video", videoFile);
-    if (fotoFile) pacote.append("foto", fotoFile);
 
     onSalvar(pacote);
   };
@@ -186,25 +184,7 @@ export function FormExercicio({ onCancelar, onSalvar, exercicioParaAlterar, list
               </select>
               <FeedbackCampo exibir={tentouEnviar} valido={categoriaOk} mensagemErro="Selecione uma Categoria." />
             </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Dificuldade <span className="text-red-500">*</span></label>
-            <select
-              required
-              value={formData.dificuldade ?? 1}
-              onChange={e => setFormData({ ...formData, dificuldade: Number(e.target.value) })}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none bg-blue-50"
-            >
-              {OPCOES_DIFICULDADE.map(op => (
-                <option key={op.valor} value={op.valor}>
-                  {op.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Foto (Opcional)</label>
-            <CampoArquivo accept="image/*" arquivoNovo={fotoFile} urlAtual={formData.url_foto} onChange={setFotoFile} />
-          </div>
+          {/* A dificuldade não é pedida no formulário: novos exercícios nascem como Iniciante (1) e, ao alterar, o valor atual é mantido. */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Vídeo (Opcional)</label>
             <CampoArquivo accept="video/*" arquivoNovo={videoFile} urlAtual={formData.url_video} onChange={setVideoFile} />

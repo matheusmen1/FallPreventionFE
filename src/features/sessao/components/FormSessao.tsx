@@ -377,7 +377,7 @@ export function FormSessao({
                     <div>
                       <h3 className="text-xl font-semibold text-gray-800 mb-1">Catálogo de Exercícios</h3>
                       <p className="text-sm text-gray-500">
-                        Exibindo Exercícios Compatíveis com a Pontuação FES-I de <strong>{formData.paciente?.nome}</strong> ({formData.paciente?.pontuacao ?? 16} Pontos).
+                       
                       </p>
                     </div>
                     
@@ -429,9 +429,6 @@ export function FormSessao({
                                   Já Adicionado
                                 </span>
                               )}
-                              <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border shadow-sm ${infoDif.corBadge}`}>
-                                {infoDif.label}
-                              </span>
                             </div>
                           </div>
                           <h4 className="font-bold text-gray-800 text-base leading-tight">{ex.nome}</h4>
@@ -589,7 +586,7 @@ export function FormSessao({
                             onChange={(e) => setConfigTemp(prev => ({ ...prev, gravar: e.target.checked }))}
                             className="w-5 h-5 accent-red-600"
                           />
-                          <span className="text-sm font-bold text-slate-700">Gravar</span>
+                          <span className="text-sm font-bold text-slate-700">Gravar Este Exercício</span>
                         </label>
                       </div>
 
