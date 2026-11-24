@@ -17,10 +17,15 @@ export function AprovacaoSessao()
   const [motivoRecusa, setMotivoRecusa] = useState('');
 
   const { usuarioLogado } = useAuth();
-  const { atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores } = useSessao();
+  const { atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores, versaoDados } = useSessao();
    useEffect(() => {
       carregarSessoesPendentes();
     }, []);
+
+  // Recarrega a lista em silêncio a cada consulta automática (polling)
+  useEffect(() => {
+    if (versaoDados > 0) carregarSessoesPendentes();
+  }, [versaoDados]);
 
   async function carregarSessoesPendentes() 
   {

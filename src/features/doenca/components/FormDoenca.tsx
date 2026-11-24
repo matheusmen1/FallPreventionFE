@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Doenca } from '../types/doenca';
+import { FeedbackCampo, classeBorda } from '../../../components/FeedbackCampo';
 interface FormProps 
 {
   onCancelar: () => void;
@@ -14,6 +15,9 @@ export function FormDoenca({ onCancelar, onSalvar, doencaParaAlterar }: FormProp
     
   });
 
+  const [tentouEnviar, setTentouEnviar] = useState(false);
+  const nomeOk = formData.nome.trim().length > 0;
+
   useEffect(() => {
     if (doencaParaAlterar) {
       setFormData(doencaParaAlterar);
@@ -26,12 +30,19 @@ export function FormDoenca({ onCancelar, onSalvar, doencaParaAlterar }: FormProp
         {doencaParaAlterar ? 'Alterar Doença' : 'Nova Doença'}
       </h2>
 
-      <form onSubmit={(e) => { e.preventDefault(); onSalvar(formData); }} className="space-y-4">
+      <form noValidate onSubmit={(e) => {
+        e.preventDefault();
+        setTentouEnviar(true);
+        if (!nomeOk) 
+          return;
+        onSalvar(formData);
+      }} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
             <div>
                 <label className="block text-sm font-medium text-gray-700">Nome <span className="text-red-500">*</span></label>
-                <input type="text" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+                <input type="text" value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
+                className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, nomeOk)}`} />
+                <FeedbackCampo exibir={tentouEnviar} valido={nomeOk} mensagemErro="Informe o Nome da Doença." />
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-700">Descrição (Opcional)</label>

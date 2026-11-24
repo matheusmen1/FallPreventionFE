@@ -10,6 +10,7 @@ import { exercicioService } from '../../../services/exercicioService';
 import type { Usuario } from '../../usuario/types/usuario';
 import { obterClassificacaoFesI } from '../../paciente/components/FormPaciente';
 import { obterInfoDificuldade } from '../../exercicio/components/FormExercicio';
+import { agoraDatetimeLocal, dataHoraSessaoValida } from '../../../utils/validacoes';
 
 interface FormProps {
   onCancelar: () => void;
@@ -51,6 +52,7 @@ export function FormSessao({
     sessaoFases: [],
     observacao: ''
   });
+  const [erroDataHora, setErroDataHora] = useState('');
   const [filtroTipoId, setFiltroTipoId] = useState<number | null>(null);
   const [exerciciosFiltrados, setExerciciosFiltrados] = useState<Exercicio[]>([]);
   const [exercicioEmConfiguracao, setExercicioEmConfiguracao] = useState<Exercicio | null>(null);
@@ -87,6 +89,15 @@ export function FormSessao({
   }, [formData.paciente, filtroTipoId, listaExercicios]);
 
   const monitoresDisponiveis = monitores.filter(monitor => monitor.id !== usuarioLogado?.id && sessaoParaAlterar?.responsavel?.id !== monitor.id);
+  const tentarSalvar = () => {
+    if (!dataHoraSessaoValida(formData.data_hora?.toString() || '')) {
+      setErroDataHora('A Data e Hora da Sessão Não Podem Estar no Passado.');
+      return;
+    }
+    setErroDataHora('');
+    onSalvar(montarSessaoParaSalvar());
+  };
+
   const montarSessaoParaSalvar = (): Sessao => ({
     ...(formData as Sessao),
     sessaoMonitoresAutorizados: (formData.sessaoMonitoresAutorizados || []).filter(
@@ -174,6 +185,21 @@ export function FormSessao({
     setFormData({ ...formData, sessaoFases: fasesAtuais });
   }
 
+  function moverFase(index: number, direcao: -1 | 1)
+  {
+    const fasesAtuais = [...(formData.sessaoFases || [])];
+    const destino = index + direcao;
+    if (destino < 0 || destino >= fasesAtuais.length) 
+      return;
+
+    [fasesAtuais[index], fasesAtuais[destino]] = [fasesAtuais[destino], fasesAtuais[index]];
+
+    setFormData({
+      ...formData,
+      sessaoFases: fasesAtuais.map((fase, i) => ({ ...fase, ordem: i + 1 }))
+    });
+  }
+
   const podeAvancar = () => {
     if (passoAtual === 1) return !!formData.paciente;
     if (passoAtual === 2) return (formData.sessaoFases && formData.sessaoFases.length > 0);
@@ -246,7 +272,7 @@ export function FormSessao({
             </p>
           </div>
         )}
-        <form onSubmit={(e) => { e.preventDefault(); onSalvar(montarSessaoParaSalvar()); }}>
+        <form onSubmit={(e) => { e.preventDefault(); tentarSalvar(); }}>
           
           {passoAtual === 1 && (
             <div className="animate-fade-in">
@@ -428,7 +454,7 @@ export function FormSessao({
                     {formData.sessaoFases && formData.sessaoFases.length > 0 ? (
                       <div className="space-y-3">
                         {formData.sessaoFases.map((fase, index) => (
-                          <div key={index} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm flex items-center justify-between">
+                          <div key={fase.exercicio.id ?? index} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm flex items-center justify-between gap-2">
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="bg-blue-100 text-blue-700 font-bold w-5 h-5 rounded-full flex items-center justify-center text-xs shrink-0">
@@ -441,7 +467,25 @@ export function FormSessao({
                                 {fase.gravar && <span className="ml-2 text-red-600 font-bold">● Gravar</span>}
                               </p>
                             </div>
-                            <button type="button" onClick={() => removerFase(index)} className="text-red-400 hover:text-red-600 p-2">✕</button>
+                            <div className="flex items-center shrink-0">
+                              <div className="flex flex-col">
+                                <button
+                                  type="button"
+                                  onClick={() => moverFase(index, -1)}
+                                  disabled={index === 0}
+                                  title="Mover para Cima"
+                                  className="px-2 py-0.5 text-xs text-gray-500 hover:text-blue-600 disabled:opacity-25 disabled:hover:text-gray-500 disabled:cursor-not-allowed cursor-pointer"
+                                >▲</button>
+                                <button
+                                  type="button"
+                                  onClick={() => moverFase(index, 1)}
+                                  disabled={index === (formData.sessaoFases?.length || 0) - 1}
+                                  title="Mover para Baixo"
+                                  className="px-2 py-0.5 text-xs text-gray-500 hover:text-blue-600 disabled:opacity-25 disabled:hover:text-gray-500 disabled:cursor-not-allowed cursor-pointer"
+                                >▼</button>
+                              </div>
+                              <button type="button" onClick={() => removerFase(index)} className="text-red-400 hover:text-red-600 p-2">✕</button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -610,7 +654,7 @@ export function FormSessao({
               </div>
             </div>
             <div className="animate-fade-in max-w-3xl mx-auto">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Autorizar Monitores</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Autorizar Monitores (Opcional)</h3>
               <p className="text-sm text-gray-500 mb-6">Selecione os Monitores que Poderão Executar Esta Sessão.</p>
 
               {carregandoMonitores ? (
@@ -652,10 +696,12 @@ export function FormSessao({
                   <label className="block text-sm font-bold text-blue-900 mb-2">Data e Hora <span className="text-red-500">*</span></label>
                   <input 
                     type="datetime-local" required 
+                    min={agoraDatetimeLocal()}
                     value={formData.data_hora?.toString() || ''} 
-                    onChange={e => setFormData({...formData, data_hora: e.target.value})}
+                    onChange={e => { setFormData({...formData, data_hora: e.target.value}); setErroDataHora(''); }}
                     className="w-full rounded-lg border border-blue-300 p-4 shadow-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-200 outline-none text-lg transition-all bg-white" 
                   />
+                  {erroDataHora && <p className="mt-2 text-sm font-medium text-red-600">{erroDataHora}</p>}
                 </div>
               </div>
 
@@ -735,7 +781,7 @@ export function FormSessao({
                   type="button" 
                   onClick={(e) => {
                      e.preventDefault(); 
-                    onSalvar(montarSessaoParaSalvar()); 
+                    tentarSalvar(); 
                   }}
                   disabled={!formData.data_hora}
                   className="rounded-lg bg-green-600 px-8 py-3 font-bold text-white hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 flex items-center gap-2 shadow-lg shadow-green-200"

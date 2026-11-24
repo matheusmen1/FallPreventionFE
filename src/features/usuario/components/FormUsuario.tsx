@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { Usuario } from '../types/usuario';
 import { Eye, EyeOff } from 'lucide-react';
+import { validarCPF, emailValido, telefoneValido } from '../../../utils/validacoes';
+import { FeedbackCampo, classeBorda } from '../../../components/FeedbackCampo';
 
 interface FormProps 
 {
@@ -15,6 +17,7 @@ export function FormUsuario({ onCancelar, onSalvar, usuarioParaAlterar, listaFis
     nome: '', cpf: '', email: '', telefone: '', ra: '', nivel: 0, senha: '', responsavel: undefined
   });
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [tentouEnviar, setTentouEnviar] = useState(false);
 
   useEffect(() => {
     if (usuarioParaAlterar) {
@@ -46,42 +49,64 @@ export function FormUsuario({ onCancelar, onSalvar, usuarioParaAlterar, listaFis
     }
   };
 
+  const nomeOk = formData.nome.trim().length > 0;
+  const cpfOk = validarCPF(formData.cpf);
+  const emailOk = emailValido(formData.email);
+  const telefoneOk = telefoneValido(formData.telefone);
+  const raOk = formData.ra.trim().length > 0;
+  const senhaPreenchida = (formData.senha || '').length > 0;
+  const senhaOk = !!usuarioParaAlterar || senhaPreenchida;
+  const senhaExibeFeedback = !usuarioParaAlterar || senhaPreenchida;
+  const responsavelOk = formData.nivel !== 0 || !!formData.responsavel;
+  const formularioValido = nomeOk && cpfOk && emailOk && telefoneOk && raOk && senhaOk && responsavelOk;
+
   return (
     <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
       <h2 className="text-xl font-bold mb-6 text-gray-800">
         {usuarioParaAlterar ? 'Alterar Usuário' : 'Novo Usuário'}
       </h2>
 
-      <form onSubmit={(e) => { e.preventDefault(); onSalvar(formData); }} className="space-y-4">
+      <form noValidate onSubmit={(e) => {
+        e.preventDefault();
+        setTentouEnviar(true);
+        if (!formularioValido) 
+          return;
+        onSalvar(formData);
+      }} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nome Completo <span className="text-red-500">*</span></label>
-            <input type="text" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+            <input type="text" value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
+              className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, nomeOk)}`} />
+            <FeedbackCampo exibir={tentouEnviar} valido={nomeOk} mensagemErro="Informe o Nome Completo." />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">CPF <span className="text-red-500">*</span></label>
-            <input type="text" required minLength={14} maxLength={14} value={formData.cpf} onChange={e => setFormData({...formData, cpf: mascaraCPF(e.target.value)})}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+            <input type="text" maxLength={14} value={formData.cpf} onChange={e => setFormData({...formData, cpf: mascaraCPF(e.target.value)})}
+              className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, cpfOk)}`} />
+            <FeedbackCampo exibir={tentouEnviar} valido={cpfOk} mensagemErro="CPF Inválido." />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">E-mail <span className="text-red-500">*</span></label>
-            <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+            <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+              className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, emailOk)}`} />
+            <FeedbackCampo exibir={tentouEnviar} valido={emailOk} mensagemErro="Informe um E-mail Válido." />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">Telefone <span className="text-red-500">*</span></label>
-            <input type="text" required minLength={14} maxLength={15} value={formData.telefone} onChange={e => setFormData({...formData, telefone: mascaraTelefone(e.target.value)})}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+            <input type="text" maxLength={15} value={formData.telefone} onChange={e => setFormData({...formData, telefone: mascaraTelefone(e.target.value)})}
+              className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, telefoneOk)}`} />
+            <FeedbackCampo exibir={tentouEnviar} valido={telefoneOk} mensagemErro="Informe um Telefone Válido com DDD." />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">RA/Matrícula <span className="text-red-500">*</span></label>
-            <input type="text" maxLength={9} required value={formData.ra} onChange={e => setFormData({...formData, ra: e.target.value})}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+            <input type="text" maxLength={9} value={formData.ra} onChange={e => setFormData({...formData, ra: e.target.value})}
+              className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, raOk)}`} />
+            <FeedbackCampo exibir={tentouEnviar} valido={raOk} mensagemErro="Informe o RA/Matrícula." />
           </div>
 
           <div>
@@ -101,11 +126,10 @@ export function FormUsuario({ onCancelar, onSalvar, usuarioParaAlterar, listaFis
             <div className="relative mt-1">
               <input 
                 type={mostrarSenha ? "text" : "password"} 
-                required={!usuarioParaAlterar} 
                 value={formData.senha || ''} 
                 onChange={e => setFormData({...formData, senha: e.target.value})}
                 placeholder={usuarioParaAlterar ? "Deixe em branco para manter a atual" : "Digite a senha"}
-                className="block w-full rounded-md border border-gray-300 pl-3 pr-10 py-2 shadow-sm focus:border-blue-500 focus:outline-none" 
+                className={`block w-full rounded-md border pl-3 pr-10 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar && senhaExibeFeedback, senhaOk)}`} 
               />
               <button
                 type="button"
@@ -117,13 +141,13 @@ export function FormUsuario({ onCancelar, onSalvar, usuarioParaAlterar, listaFis
                 {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            <FeedbackCampo exibir={tentouEnviar && senhaExibeFeedback} valido={senhaOk} mensagemErro="Informe a Senha." />
           </div>
 
           {formData.nivel === 0 && (
             <div>
               <label className="block text-sm font-medium text-gray-700">Fisioterapeuta Responsável <span className="text-red-500">*</span></label>
               <select 
-                required 
                 value={formData.responsavel?.id || ''} 
                 onChange={e => {
                   const idSelecionado = Number(e.target.value);
@@ -133,7 +157,7 @@ export function FormUsuario({ onCancelar, onSalvar, usuarioParaAlterar, listaFis
                     responsavel: fisioCompleto || undefined 
                   });
                 }}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none bg-blue-50"
+                className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none bg-blue-50 ${classeBorda(tentouEnviar, responsavelOk)}`}
               >
                 <option value="">Selecione um Fisioterapeuta...</option>
                 {listaFisioterapeutas.map(fisio => (
@@ -142,6 +166,7 @@ export function FormUsuario({ onCancelar, onSalvar, usuarioParaAlterar, listaFis
                   </option>
                 ))}
               </select>
+              <FeedbackCampo exibir={tentouEnviar} valido={responsavelOk} mensagemErro="Selecione o Fisioterapeuta Responsável." />
             </div>
           )}
          

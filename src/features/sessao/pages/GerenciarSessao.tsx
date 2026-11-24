@@ -25,12 +25,17 @@ export function GerenciarSessao()
 
   const { usuarioLogado } = useAuth();
   const navigate = useNavigate();
-  const { atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores } = useSessao();
+  const { atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores, versaoDados } = useSessao();
   const [btSelecionado, setBtSelecionado] = useState(false);
 
   useEffect(() => {
     carregarDadosIniciais();
   }, []);
+
+  // Recarrega a lista em silêncio a cada consulta automática (polling)
+  useEffect(() => {
+    if (versaoDados > 0) carregarSessoes();
+  }, [versaoDados]);
 
   async function carregarDadosIniciais() {
     try {

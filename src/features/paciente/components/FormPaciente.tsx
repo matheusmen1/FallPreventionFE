@@ -3,6 +3,8 @@ import type { Paciente } from '../types/paciente';
 import type { Doenca } from '../../doenca/types/doenca';
 import { doencaService } from '../../../services/doencaService';
 import { Plus, X } from 'lucide-react';
+import { validarCPF, dataNascimentoValida, hojeISO, emailValido, telefoneValido } from '../../../utils/validacoes';
+import { FeedbackCampo, classeBorda } from '../../../components/FeedbackCampo';
 
 interface FormProps 
 {
@@ -87,6 +89,7 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
     nome: '', cpf: '', email: '', telefone: '', data_nascimento: '', sexo: '', pontuacao: 16
   });
   const [respostasFesI, setRespostasFesI] = useState<number[]>(Array(16).fill(1));
+  const [tentouEnviar, setTentouEnviar] = useState(false);
 
   // Lista local de doenças para permitir inserção imediata sem recarregar a tela
   const [doencas, setDoencas] = useState<Doenca[]>(listaDoencas);
@@ -97,6 +100,8 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
   const [descricaoNovaDoenca, setDescricaoNovaDoenca] = useState('');
   const [salvandoDoenca, setSalvandoDoenca] = useState(false);
   const [erroDoenca, setErroDoenca] = useState('');
+  const [tentouEnviarDoenca, setTentouEnviarDoenca] = useState(false);
+  const nomeDoencaOk = nomeNovaDoenca.trim().length > 0;
 
   useEffect(() => {
     setDoencas(listaDoencas);
@@ -112,6 +117,14 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
       setRespostasFesI(distribuirPontuacaoEmRespostas(pts));
     }
   }, [pacienteParaAlterar]);
+
+  const nomeOk = formData.nome.trim().length > 0;
+  const cpfOk = validarCPF(formData.cpf);
+  const emailOk = emailValido(formData.email);
+  const telefoneOk = telefoneValido(formData.telefone);
+  const dataOk = dataNascimentoValida(formData.data_nascimento);
+  const sexoOk = formData.sexo !== '';
+  const passo1Valido = nomeOk && cpfOk && emailOk && telefoneOk && dataOk && sexoOk;
 
   const pontuacaoCalculada = respostasFesI.reduce((acc, val) => acc + val, 0);
   const classificacao = obterClassificacaoFesI(pontuacaoCalculada);
@@ -150,6 +163,11 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
 
   function handleAvancarParaAnamnese(e: React.FormEvent) {
     e.preventDefault();
+
+    setTentouEnviar(true);
+    if (!passo1Valido) 
+      return;
+
     setPassoAtual(2);
   }
 
@@ -163,10 +181,9 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
 
   async function handleSalvarNovaDoenca(e: React.FormEvent) {
     e.preventDefault();
-    if (!nomeNovaDoenca.trim()) {
-      setErroDoenca('Por Favor, Informe o Nome da Nova Doença.');
+    setTentouEnviarDoenca(true);
+    if (!nomeDoencaOk) 
       return;
-    }
 
     try {
       setSalvandoDoenca(true);
@@ -221,46 +238,52 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
 
       <div className="p-6">
         {passoAtual === 1 ? (
-          <form onSubmit={handleAvancarParaAnamnese} className="space-y-4">
+          <form onSubmit={handleAvancarParaAnamnese} noValidate className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Nome Completo<span className="text-red-500"> *</span></label>
-                <input type="text" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+                <input type="text" value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})}
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, nomeOk)}`} />
+                <FeedbackCampo exibir={tentouEnviar} valido={nomeOk} mensagemErro="Informe o Nome Completo." />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">CPF<span className="text-red-500"> *</span></label>
-                <input type="text" required minLength={14} value={formData.cpf} onChange={e => setFormData({...formData, cpf: mascaraCPF(e.target.value)})}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+                <input type="text" maxLength={14} value={formData.cpf} onChange={e => setFormData({...formData, cpf: mascaraCPF(e.target.value)})}
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, cpfOk)}`} />
+                <FeedbackCampo exibir={tentouEnviar} valido={cpfOk} mensagemErro="CPF Inválido." />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">E-mail<span className="text-red-500"> *</span></label>
-                <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+                <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, emailOk)}`} />
+                <FeedbackCampo exibir={tentouEnviar} valido={emailOk} mensagemErro="Informe um E-mail Válido." />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Telefone<span className="text-red-500"> *</span></label>
-                <input type="text" required minLength={14} maxLength={15} value={formData.telefone} onChange={e => setFormData({...formData, telefone: mascaraTelefone(e.target.value)})}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+                <input type="text" maxLength={15} value={formData.telefone} onChange={e => setFormData({...formData, telefone: mascaraTelefone(e.target.value)})}
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, telefoneOk)}`} />
+                <FeedbackCampo exibir={tentouEnviar} valido={telefoneOk} mensagemErro="Informe um Telefone Válido com DDD." />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Data Nascimento<span className="text-red-500"> *</span></label>
-                <input type="date" required value={formData.data_nascimento} onChange={e => setFormData({...formData, data_nascimento: e.target.value})}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none" />
+                <input type="date" max={hojeISO()} value={formData.data_nascimento} onChange={e => setFormData({...formData, data_nascimento: e.target.value})}
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none ${classeBorda(tentouEnviar, dataOk)}`} />
+                <FeedbackCampo exibir={tentouEnviar} valido={dataOk} mensagemErro="Informe uma Data de Nascimento que Não Seja Posterior à Data Atual." />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Sexo<span className="text-red-500"> *</span></label>
                 <select value={formData.sexo} onChange={e => setFormData({ ...formData, sexo: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none bg-blue-50">
+                  className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none bg-blue-50 ${classeBorda(tentouEnviar, sexoOk)}`}>
                   <option value="">Selecione o Sexo...</option>
                   <option value="M">Masculino</option>
                   <option value="F">Feminino</option>
                 </select>
+                <FeedbackCampo exibir={tentouEnviar} valido={sexoOk} mensagemErro="Selecione o Sexo." />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Observação (Opcional)</label>
@@ -277,6 +300,7 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
                       setNomeNovaDoenca('');
                       setDescricaoNovaDoenca('');
                       setErroDoenca('');
+                      setTentouEnviarDoenca(false);
                       setModalNovaDoenca(true);
                     }}
                     className="text-xs text-blue-600 hover:text-blue-800 font-semibold hover:underline flex items-center gap-1 transition-colors cursor-pointer"
@@ -403,7 +427,7 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
               </button>
             </div>
 
-            <form onSubmit={handleSalvarNovaDoenca} className="p-6 space-y-4">
+            <form onSubmit={handleSalvarNovaDoenca} noValidate className="p-6 space-y-4">
               {erroDoenca && (
                 <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
                   {erroDoenca}
@@ -416,13 +440,13 @@ export function FormPaciente({ onCancelar, onSalvar, pacienteParaAlterar, listaD
                 </label>
                 <input
                   type="text"
-                  required
                   autoFocus
                   placeholder="Digite o Nome da Doença"
                   value={nomeNovaDoenca}
                   onChange={e => setNomeNovaDoenca(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+                  className={`w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:outline-none ${classeBorda(tentouEnviarDoenca, nomeDoencaOk)}`}
                 />
+                <FeedbackCampo exibir={tentouEnviarDoenca} valido={nomeDoencaOk} mensagemErro="Informe o Nome da Doença." />
               </div>
 
               <div>

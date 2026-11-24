@@ -1,8 +1,11 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { sessaoService } from '../services/sessaoService';
 import { useAuth } from './AutoContext'; 
 
+const INTERVALO_POLLING_MS = 5000; // 5 segundos
+
 interface SessaoContextData {
+  versaoDados: number;
   qtdPendentes: number;
   qtdRecusadas: number;
   qtdeAprovadas: number;
@@ -23,6 +26,8 @@ export function SessaoProvider({ children }: { children: ReactNode })
   const [qtdeAprovadas, setQtdeAprovadas] = useState(0);
   const [qtdeAprovadasMonitores, setQtdeAprovadasMonitores] = useState(0);
   const [qtdeAprovadasAutorizadas, setQtdeAprovadasAutorizadas] = useState(0);
+  const [versaoDados, setVersaoDados] = useState(0);
+  const consultandoRef = useRef(false);
   const { usuarioLogado } = useAuth();
 
   async function atualizarSessoes()
@@ -82,6 +87,42 @@ export function SessaoProvider({ children }: { children: ReactNode })
       }
     }
   }
+  async function atualizarTudo()
+  {
+    if (consultandoRef.current) 
+      return; 
+    consultandoRef.current = true;
+    try {
+      await Promise.all([
+        atualizarSessoes(),
+        carregarSessoesAprovadas(),
+        carregarSessoesAprovadasMonitores(),
+        carregarSessoesAprovadasAutorizadas()
+      ]);
+      setVersaoDados(v => v + 1);
+    } finally {
+      consultandoRef.current = false;
+    }
+  }
+
+  useEffect(() => {
+    if (!usuarioLogado) 
+      return;
+
+    const consultar = () => {
+      if (!document.hidden) 
+        atualizarTudo();
+    };
+
+    const intervalo = setInterval(consultar, INTERVALO_POLLING_MS);
+    document.addEventListener('visibilitychange', consultar);
+
+    return () => {
+      clearInterval(intervalo);
+      document.removeEventListener('visibilitychange', consultar);
+    };
+  }, [usuarioLogado]);
+
   useEffect(() => {
     atualizarSessoes();
     carregarSessoesAprovadas();
@@ -90,7 +131,7 @@ export function SessaoProvider({ children }: { children: ReactNode })
   }, [usuarioLogado]);
 
   return (
-    <SessaoContext.Provider value={{ qtdPendentes, qtdRecusadas, qtdeAprovadas, qtdeAprovadasMonitores, qtdeAprovadasAutorizadas, carregarSessoesAprovadasAutorizadas, atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores }}>
+    <SessaoContext.Provider value={{ versaoDados, qtdPendentes, qtdRecusadas, qtdeAprovadas, qtdeAprovadasMonitores, qtdeAprovadasAutorizadas, carregarSessoesAprovadasAutorizadas, atualizarSessoes, carregarSessoesAprovadas, carregarSessoesAprovadasMonitores }}>
       {children}
     </SessaoContext.Provider>
   );

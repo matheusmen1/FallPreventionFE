@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../../../contexts/AutoContext';
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
+import { emailValido } from '../../../utils/validacoes';
+import { FeedbackCampo, classeBorda } from '../../../components/FeedbackCampo';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -8,10 +10,16 @@ export function Login() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [tentouEnviar, setTentouEnviar] = useState(false);
+  const emailOk = emailValido(email);
+  const senhaOk = senha.length > 0;
   const { login } = useAuth(); 
 
   async function logar(e: React.FormEvent) {
     e.preventDefault();
+    setTentouEnviar(true);
+    if (!emailOk || !senhaOk) 
+      return;
     try {
       setErro('');
       setCarregando(true);
@@ -47,7 +55,7 @@ export function Login() {
               </div>
             )}
 
-            <form onSubmit={logar} className="space-y-5">
+            <form onSubmit={logar} noValidate className="space-y-5">
               
               <div>
                 <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
@@ -59,14 +67,14 @@ export function Login() {
                   </div>
                   <input
                     type="email"
-                    required
                     placeholder="Digite seu E-mail"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={carregando}
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950/70 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors disabled:opacity-50"
+                    className={`w-full pl-10 pr-4 py-2.5 bg-slate-950/70 border rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none transition-colors disabled:opacity-50 ${classeBorda(tentouEnviar, emailOk, true)}`}
                   />
                 </div>
+                <FeedbackCampo exibir={tentouEnviar} valido={emailOk} mensagemErro="Informe um E-mail Válido." escuro />
               </div>
 
               <div>
@@ -81,12 +89,11 @@ export function Login() {
                   </div>
                   <input
                     type={mostrarSenha ? "text" : "password"}
-                    required
                     placeholder="••••••••"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
                     disabled={carregando}
-                    className="w-full pl-10 pr-11 py-2.5 bg-slate-950/70 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors disabled:opacity-50"
+                    className={`w-full pl-10 pr-11 py-2.5 bg-slate-950/70 border rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none transition-colors disabled:opacity-50 ${classeBorda(tentouEnviar, senhaOk, true)}`}
                   />
                   <button
                     type="button"
@@ -98,6 +105,7 @@ export function Login() {
                     {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                <FeedbackCampo exibir={tentouEnviar} valido={senhaOk} mensagemErro="Informe a Senha." escuro />
               </div>
 
               <button
