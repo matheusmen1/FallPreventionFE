@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
 import type { TipoExercicio } from '../../tipoExercicio/types/tipoExercicio';
 import { tipoExercicioService } from '../../../services/tipoExercicioService';
 import { FormExercicio, obterInfoDificuldade } from '../components/FormExercicio';
@@ -13,6 +14,7 @@ export function GerenciarExercicio()
   
   const [exibirFormulario, setExibirFormulario] = useState(false);
   const [exercicioEdicao, setExercicioEdicao] = useState<Exercicio | null>(null);
+  const [exercicioDetalhe, setExercicioDetalhe] = useState<Exercicio | null>(null);
 
   useEffect(() => {
     carregandoExercicio();
@@ -139,7 +141,6 @@ export function GerenciarExercicio()
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pacote Unity</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
@@ -147,19 +148,19 @@ export function GerenciarExercicio()
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {carregando ? (
-              <tr><td colSpan={6} className="px-6 py-4 text-center text-gray-500">Carregando Dados...</td></tr>
+              <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Carregando Dados...</td></tr>
             ) :exercicios.length === 0 ? (
-              <tr><td colSpan={6} className="px-6 py-4 text-center text-gray-500">Nenhum Exercício Encontrado.</td></tr>
+              <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Nenhum Exercício Encontrado.</td></tr>
             ) : (
               exercicios.map((exercicio) => {
                 const infoDif = obterInfoDificuldade(exercicio.dificuldade);
                 return (
                 <tr key={exercicio.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.nome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.descricao}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.tipo_exercicio.nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{exercicio.codigo_nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><div className="flex gap-2 justify-end">
+                    <button onClick={() => setExercicioDetalhe(exercicio)} className="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 active:scale-95 transition-all duration-100">Ver mais</button>
                     <button onClick={() => onAlterar(exercicio)}  className="px-3 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all duration-100">Alterar</button>
                     <button onClick={() => excluir(exercicio)} className="px-3 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 active:scale-95 transition-all duration-100">Excluir</button>
                     </div>
@@ -170,6 +171,38 @@ export function GerenciarExercicio()
           </tbody>
         </table>
       </div>
+      {exercicioDetalhe && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setExercicioDetalhe(null)}>
+          <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center gap-3">
+              <h3 className="text-lg font-bold text-gray-800 truncate">{exercicioDetalhe.nome}</h3>
+              <button
+                type="button"
+                onClick={() => setExercicioDetalhe(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                title="Fechar"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 text-sm">
+              <span className="block text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</span>
+              <p className="mt-1 text-gray-900 whitespace-pre-wrap break-words">{exercicioDetalhe.descricao || 'Nenhuma'}</p>
+            </div>
+
+            <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setExercicioDetalhe(null)}
+                className="px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

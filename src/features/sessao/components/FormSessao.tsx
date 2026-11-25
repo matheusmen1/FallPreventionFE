@@ -401,7 +401,7 @@ export function FormSessao({
                       Nenhum Exercício Encontrado para o Nível de Preocupação Deste Paciente Neste Filtro.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
                       {exerciciosFiltrados.map(ex => {
                         const infoDif = obterInfoDificuldade(ex.dificuldade);
                         const jaAdicionado = formData.sessaoFases?.some(f => f.exercicio.id === ex.id);
@@ -432,7 +432,7 @@ export function FormSessao({
                             </div>
                           </div>
                           <h4 className="font-bold text-gray-800 text-base leading-tight">{ex.nome}</h4>
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{ex.descricao}</p>
+                          <p className="text-gray-800 mt-1 line-clamp-3">{ex.descricao}</p>
                         </div>
                       )})}
                     </div>

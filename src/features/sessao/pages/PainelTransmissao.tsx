@@ -13,7 +13,7 @@ export function PainelTransmissao({ sessaoId, sessaoFaseId, gravar, emExecucao, 
   const videoRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const [status, setStatus] = useState("Aguardando Transmissão...");
+  const [status, setStatus] = useState("Aguardando Conexão...");
   const [stream, setStream] = useState<MediaStream | null>(null);
   const gravadoRef = useRef<{ stream: MediaStream; fase: number } | null>(null);
   const reinicioKeyRef = useRef(reinicioKey);
@@ -86,7 +86,7 @@ export function PainelTransmissao({ sessaoId, sessaoFaseId, gravar, emExecucao, 
           if (pcRef.current !== pc) 
             return; 
           if (pc.connectionState === "failed" || pc.connectionState === "disconnected" || pc.connectionState === "closed") {
-            setStatus("Aguardando Transmissão...");
+            setStatus("Aguardando Conexão...");
             setStream(null);
             if (videoRef.current != null) {
               videoRef.current.srcObject = null;
@@ -95,7 +95,7 @@ export function PainelTransmissao({ sessaoId, sessaoFaseId, gravar, emExecucao, 
         };
         pc.ontrack = (event) => {
           console.log("[webrtc] ontrack: novo stream");
-          setStatus("Transmissão Ativa 🟢");
+          setStatus("Conexão Estabelecida 🟢");
           if (videoRef.current) {
             const novoStream = (event.streams && event.streams[0])
               ? event.streams[0]
@@ -166,7 +166,7 @@ export function PainelTransmissao({ sessaoId, sessaoFaseId, gravar, emExecucao, 
           <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
           Visão do Paciente
         </h2>
-        <span className={`text-sm font-bold uppercase tracking-wider ${status.includes('Ativa') ? 'text-green-400' : 'text-yellow-400 animate-pulse'}`}>
+        <span className={`text-sm font-bold uppercase tracking-wider ${status.includes('Estabelecida') ? 'text-green-400' : 'text-yellow-400 animate-pulse'}`}>
           {status}
         </span>
       </div>
@@ -180,7 +180,7 @@ export function PainelTransmissao({ sessaoId, sessaoFaseId, gravar, emExecucao, 
           className="w-full h-full object-cover"
         />
 
-        {!status.includes('Ativa') && (
+        {!status.includes('Estabelecida') && (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-800/50 backdrop-blur-sm">
             <svg className="w-12 h-12 text-slate-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
