@@ -583,7 +583,7 @@ export function ExecucaoSessao({ setMenuAberto }: ExecucaoSessaoProps) {
               Atenção ao Iniciar
             </h3>
             <p className="text-sm text-gray-600 mb-6">
-              Por Favor, Poscione o Paciente na Área Demarcada no Chão, Coloque o Capacete na Cabeça do Paciente e Ligue o Dispositivo.
+              Por Favor, Poscione o Paciente na Área Demarcada no Chão da Sala, Coloque o Capacete na Cabeça do Paciente e Ligue o Dispositivo.
             </p>
             <button
               type="button"
